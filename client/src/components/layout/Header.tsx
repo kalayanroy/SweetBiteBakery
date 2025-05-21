@@ -50,23 +50,8 @@ const Header = () => {
             </Link>
           </nav>
 
-          {/* Cart and Account - Desktop */}
+          {/* Account - Desktop */}
           <div className="hidden md:flex items-center space-x-5">
-            <div className="relative group">
-              <button 
-                className="flex items-center text-text-dark hover:text-primary transition-colors"
-                onClick={() => setIsOpen(true)}
-              >
-                <ShoppingCart className="h-5 w-5" />
-                <span className="ml-2 font-semibold">Cart</span>
-                {cart.items.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                    {cart.items.length}
-                  </span>
-                )}
-              </button>
-            </div>
-            
             <Link href="/admin/login">
               <div className="flex items-center text-text-dark hover:text-primary transition-colors cursor-pointer">
                 <User className="h-5 w-5" />
@@ -76,19 +61,7 @@ const Header = () => {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="flex items-center md:hidden space-x-4">
-            <button 
-              className="p-2 text-primary relative"
-              onClick={() => setIsOpen(true)}
-              aria-label="Open cart"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              {cart.items.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                  {cart.items.length}
-                </span>
-              )}
-            </button>
+          <div className="flex items-center md:hidden">
             <button 
               className="text-primary p-2" 
               onClick={() => setMobileMenuOpen(true)}
@@ -100,9 +73,6 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Cart Sidebar */}
-      <CartSidebar isOpen={isOpen} setIsOpen={setIsOpen} />
-      
       {/* Mobile Menu Sidebar */}
       <MobileSidebar isOpen={mobileMenuOpen} setIsOpen={setMobileMenuOpen} />
     </header>
