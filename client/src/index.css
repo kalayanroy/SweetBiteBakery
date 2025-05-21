@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Nunito:wght@400;600;700&display=swap');
+
+:root {
+  --background: 42 33% 98%;
+  --foreground: 20 14.3% 4.1%;
+  --card: 0 0% 100%;
+  --card-foreground: 20 14.3% 4.1%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 14.3% 4.1%;
+  --primary: 23 58% 36%; /* SweetBite brown: #8B5A2B */
+  --primary-foreground: 60 9.1% 97.8%;
+  --secondary: 39 37% 92%; /* SweetBite cream: #F5F0E1 */
+  --secondary-foreground: 24 9.8% 10%;
+  --muted: 60 4.8% 95.9%;
+  --muted-foreground: 25 5.3% 44.7%;
+  --accent: 340 80% 89%; /* SweetBite pink: #F8C8DC */
+  --accent-foreground: 24 9.8% 10%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  --border: 24 5.7% 90%;
+  --input: 24 5.7% 90%;
+  --ring: 23 58% 36%;
+  --radius: 0.5rem;
+  --chart-1: 23 58% 36%;
+  --chart-2: 39 37% 92%;
+  --chart-3: 340 80% 89%;
+  --chart-4: 43 72% 51%;
+  --chart-5: 197 85% 43%;
+  --sidebar-background: 40 30% 96%;
+  --sidebar-foreground: 23 58% 36%;
+  --sidebar-primary: 23 58% 36%;
+  --sidebar-primary-foreground: 60 9.1% 97.8%;
+  --sidebar-accent: 340 80% 89%;
+  --sidebar-accent-foreground: 24 9.8% 10%;
+  --sidebar-border: 24 9.8% 86%;
+  --sidebar-ring: 23 58% 36%;
+  --neutral: 39 40% 96%; /* SweetBite neutral: #F9F5EB */
+  --text-dark: 26 30% 19%; /* SweetBite text-dark: #3C2A21 */
+  --success: 122.2 39% 49.8%;
+  --error: 0 72.2% 50.6%;
+}
+
+.dark {
+  --background: 24 10% 10%;
+  --foreground: 0 0% 98%;
+  --card: 24 9.8% 10%;
+  --card-foreground: 0 0% 98%;
+  --popover: 24 9.8% 10%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 23 58% 36%;
+  --primary-foreground: 60 9.1% 97.8%;
+  --secondary: 39 37% 20%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 12 6.5% 15.1%;
+  --muted-foreground: 24 5.4% 63.9%;
+  --accent: 340 80% 40%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 24 5.9% 27.9%;
+  --input: 24 5.9% 27.9%;
+  --ring: 23 58% 50%;
+  --chart-1: 23 58% 50%;
+  --chart-2: 39 37% 70%;
+  --chart-3: 340 80% 60%;
+  --chart-4: 43 72% 70%;
+  --chart-5: 197 85% 60%;
+  --sidebar-background: 24 10% 15%;
+  --sidebar-foreground: 60 9.1% 97.8%;
+  --sidebar-primary: 23 58% 36%;
+  --sidebar-primary-foreground: 60 9.1% 97.8%;
+  --sidebar-accent: 340 80% 40%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 24 5.9% 27.9%;
+  --sidebar-ring: 23 58% 50%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply font-body bg-background text-foreground;
+    color: hsl(var(--text-dark));
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white py-3 px-6 rounded-full font-semibold hover:bg-opacity-90 transition-all transform hover:-translate-y-1;
+  }
+  
+  .btn-secondary {
+    @apply bg-transparent border-2 border-primary text-primary py-3 px-6 rounded-full font-semibold hover:bg-primary hover:text-white transition-all transform hover:-translate-y-1;
+  }
+  
+  .container-custom {
+    @apply container mx-auto px-4;
+  }
+  
+  .hover-card {
+    @apply transition-transform duration-300 hover:-translate-y-2;
+  }
+}
