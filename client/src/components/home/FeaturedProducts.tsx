@@ -45,10 +45,8 @@ const FeaturedProducts = () => {
         )}
 
         <div className="text-center mt-12">
-          <Link href="/products">
-            <a className="inline-block bg-transparent border-2 border-primary text-primary py-3 px-8 rounded-full font-semibold hover:bg-primary hover:text-white transition-all">
-              View All Products <ArrowRight className="ml-2 inline" size={18} />
-            </a>
+          <Link href="/products" className="inline-block bg-transparent border-2 border-primary text-primary py-3 px-8 rounded-full font-semibold hover:bg-primary hover:text-white transition-all">
+            View All Products <ArrowRight className="ml-2 inline" size={18} />
           </Link>
         </div>
       </div>
