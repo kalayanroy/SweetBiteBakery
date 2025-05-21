@@ -37,7 +37,7 @@ const CartSidebar = ({ isOpen, setIsOpen }: CartSidebarProps) => {
       />
       
       {/* Sidebar */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl overflow-y-auto translate-x-0 transition-transform duration-300 ease-in-out border-l border-[#e3d9c8] z-[101]">
+      <div className="fixed right-0 top-0 bottom-0 h-full w-full max-w-md bg-white shadow-xl overflow-y-auto transition-transform duration-300 ease-in-out border-l border-[#e3d9c8] z-[101]" style={{ transform: isOpen ? 'translateX(0)' : 'translateX(100%)' }}>
         {/* Header */}
         <div className="sticky top-0 bg-white px-7 py-6 flex justify-between items-center border-b border-[#e3d9c8]">
           <h2 className="font-heading text-2xl font-bold text-primary">Your Cart</h2>
