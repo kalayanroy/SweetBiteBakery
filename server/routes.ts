@@ -12,11 +12,23 @@ import {
   contactFormSchema
 } from "@shared/schema";
 import { checkAuth, authenticateUser } from "./auth";
-import { loadInitialData } from "./data/initialData";
+import { loadInitialData } from "./loadInitialData";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize data if storage is empty
-  await loadInitialData(storage);
+  // Check database connection before loading initial data
+  try {
+    const { checkDatabaseConnection } = await import("./db");
+    const isConnected = await checkDatabaseConnection();
+    
+    if (isConnected) {
+      // Initialize data if storage is empty
+      await loadInitialData(storage);
+    } else {
+      console.warn("Database connection failed, skipping initial data load");
+    }
+  } catch (error) {
+    console.error("Error checking database connection:", error);
+  }
   
   // API Routes
   
