@@ -26,14 +26,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { id: '', items: [], subtotal: 0 };
     }
     
-    const savedCart = localStorage.getItem(CART_STORAGE_KEY);
-    if (savedCart) {
-      try {
-        return JSON.parse(savedCart);
-      } catch (error) {
-        console.error('Failed to parse cart from localStorage:', error);
-      }
-    }
+    // Clear old cart data to fix price calculation issues
+    localStorage.removeItem(CART_STORAGE_KEY);
     
     return { id: createCartId(), items: [], subtotal: 0 };
   });
