@@ -9,22 +9,42 @@ import AdminLayout from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Table, TableBody, TableCaption, TableCell, 
-  TableHead, TableHeader, TableRow 
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { 
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, 
-  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Dialog, DialogContent, DialogDescription, 
-  DialogHeader, DialogTitle, DialogTrigger, DialogFooter
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { 
-  Plus, Search, MoreVertical, Edit, Trash2, 
-  AlertTriangle, ChevronLeft, ChevronRight 
+import {
+  Plus,
+  Search,
+  MoreVertical,
+  Edit,
+  Trash2,
+  AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
@@ -44,41 +64,49 @@ const AdminProducts = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/admin/products', {
-          credentials: 'include'
+        const response = await fetch("/api/admin/products", {
+          credentials: "include",
         });
-        
+
         if (response.status === 401) {
-          navigate('/admin/login');
+          navigate("/admin/login");
         }
       } catch (error) {
-        console.error('Auth check failed:', error);
-        navigate('/admin/login');
+        console.error("Auth check failed:", error);
+        navigate("/admin/login");
       }
     };
-    
+
     checkAuth();
   }, [navigate]);
 
   // Fetch products
-  const { data: products, isLoading, error } = useQuery<ProductWithCategory[]>({
-    queryKey: ['/api/products'],
+  const {
+    data: products,
+    isLoading,
+    error,
+  } = useQuery<ProductWithCategory[]>({
+    queryKey: ["/api/products"],
     // If this fails due to auth, we'll redirect in the effect above
-    retry: false 
+    retry: false,
   });
 
   // Filter products based on search term
-  const filteredProducts = products 
-    ? products.filter(product => 
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProducts = products
+    ? products.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          product.description.toLowerCase().includes(searchTerm.toLowerCase()),
       )
     : [];
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const paginatedProducts = filteredProducts.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE,
+  );
 
   // Handle product deletion
   const handleDeleteClick = (productId: number) => {
@@ -88,28 +116,32 @@ const AdminProducts = () => {
 
   const confirmDelete = async () => {
     if (!deleteProductId) return;
-    
+
     setIsDeleting(true);
-    
+
     try {
-      await apiRequest("DELETE", `/api/admin/products/${deleteProductId}`, undefined);
-      
+      await apiRequest(
+        "DELETE",
+        `/api/admin/products/${deleteProductId}`,
+        undefined,
+      );
+
       queryClient.invalidateQueries({
-        queryKey: ['/api/products'],
+        queryKey: ["/api/products"],
       });
-      
+
       toast({
         title: "Product deleted",
         description: "The product has been successfully deleted",
       });
-      
+
       setIsDeleteDialogOpen(false);
     } catch (error) {
       console.error("Delete error:", error);
       toast({
         title: "Error",
         description: "Failed to delete product. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsDeleting(false);
@@ -136,9 +168,12 @@ const AdminProducts = () => {
         <Card className="mb-8">
           <CardContent className="p-6">
             <div className="relative">
-              <Search className="absolute left-3 top-3 text-gray-400" size={16} />
-              <Input 
-                placeholder="Search products..." 
+              <Search
+                className="absolute left-3 top-3 text-gray-400"
+                size={16}
+              />
+              <Input
+                placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
@@ -164,7 +199,10 @@ const AdminProducts = () => {
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
-                <p>No products found. {searchTerm && "Try a different search term."}</p>
+                <p>
+                  No products found.{" "}
+                  {searchTerm && "Try a different search term."}
+                </p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -183,12 +221,14 @@ const AdminProducts = () => {
                   <TableBody>
                     {paginatedProducts.map((product) => (
                       <TableRow key={product.id}>
-                        <TableCell className="font-mono text-xs">{product.id}</TableCell>
+                        <TableCell className="font-mono text-xs">
+                          {product.id}
+                        </TableCell>
                         <TableCell>
                           <div className="w-12 h-12 rounded-md overflow-hidden">
-                            <img 
-                              src={product.image} 
-                              alt={product.name} 
+                            <img
+                              src={product.image}
+                              alt={product.name}
                               className="w-full h-full object-cover"
                             />
                           </div>
@@ -202,15 +242,33 @@ const AdminProducts = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">{product.category.name}</Badge>
+                          <Badge variant="outline">
+                            {product.category.name}
+                          </Badge>
                         </TableCell>
                         <TableCell>{formatCurrency(product.price)}</TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-1">
-                            {product.featured && <Badge className="bg-success text-white">Featured</Badge>}
-                            {product.isBestseller && <Badge className="bg-amber-500 text-white">Bestseller</Badge>}
-                            {product.isNew && <Badge className="bg-blue-500 text-white">New</Badge>}
-                            {product.isPopular && <Badge className="bg-purple-500 text-white">Popular</Badge>}
+                            {product.featured && (
+                              <Badge className="bg-amber-500 text-white">
+                                Featured
+                              </Badge>
+                            )}
+                            {product.isBestseller && (
+                              <Badge className="bg-amber-500 text-white">
+                                Bestseller
+                              </Badge>
+                            )}
+                            {product.isNew && (
+                              <Badge className="bg-blue-500 text-white">
+                                New
+                              </Badge>
+                            )}
+                            {product.isPopular && (
+                              <Badge className="bg-purple-500 text-white">
+                                Popular
+                              </Badge>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
@@ -224,15 +282,17 @@ const AdminProducts = () => {
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem asChild>
-                                <Link href={`/admin/products/edit/${product.id}`}>
+                                <Link
+                                  href={`/admin/products/edit/${product.id}`}
+                                >
                                   <div className="w-full flex items-center cursor-pointer">
                                     <Edit className="mr-2 h-4 w-4" />
                                     Edit
                                   </div>
                                 </Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                className="text-red-500 focus:text-red-500" 
+                              <DropdownMenuItem
+                                className="text-red-500 focus:text-red-500"
                                 onClick={() => handleDeleteClick(product.id)}
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
@@ -252,14 +312,21 @@ const AdminProducts = () => {
             {filteredProducts.length > 0 && (
               <div className="flex justify-between items-center p-4 border-t">
                 <div className="text-sm text-gray-500">
-                  Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} products
+                  Showing {startIndex + 1} to{" "}
+                  {Math.min(
+                    startIndex + ITEMS_PER_PAGE,
+                    filteredProducts.length,
+                  )}{" "}
+                  of {filteredProducts.length} products
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="outline"
                     size="icon"
                     disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
+                    onClick={() =>
+                      setCurrentPage((page) => Math.max(1, page - 1))
+                    }
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
@@ -270,7 +337,9 @@ const AdminProducts = () => {
                     variant="outline"
                     size="icon"
                     disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))}
+                    onClick={() =>
+                      setCurrentPage((page) => Math.min(totalPages, page + 1))
+                    }
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
@@ -287,19 +356,20 @@ const AdminProducts = () => {
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this product? This action cannot be undone.
+              Are you sure you want to delete this product? This action cannot
+              be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
               disabled={isDeleting}
             >
               Cancel
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={confirmDelete}
               disabled={isDeleting}
             >
