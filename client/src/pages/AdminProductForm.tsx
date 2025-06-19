@@ -188,8 +188,9 @@ const AdminProductForm = () => {
       // Refresh categories
       queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
       
-      // Set the new category as selected
-      form.setValue("categoryId", newCategory.id);
+      // Set the new category as selected  
+      const categoryData = newCategory as any;
+      form.setValue("categoryId", categoryData.id);
       setNewCategoryName("");
       
       toast({
@@ -465,18 +466,51 @@ const AdminProductForm = () => {
                   )}
                 />
 
-                {/* Image URL */}
+                {/* Image Upload */}
                 <FormField
                   control={form.control}
                   name="image"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Image URL</FormLabel>
+                      <FormLabel>Product Image</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://example.com/image.jpg" {...field} />
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-4">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageChange}
+                              className="hidden"
+                              id="image-upload"
+                            />
+                            <label
+                              htmlFor="image-upload"
+                              className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
+                            >
+                              <Upload className="mr-2 h-4 w-4" />
+                              Choose Image
+                            </label>
+                            <span className="text-sm text-gray-500">
+                              {imageFile ? imageFile.name : "No file selected"}
+                            </span>
+                          </div>
+                          
+                          {/* Alternative URL input */}
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-600">Or enter image URL:</label>
+                            <Input 
+                              placeholder="https://example.com/image.jpg" 
+                              value={field.value || ""}
+                              onChange={(e) => {
+                                field.onChange(e.target.value);
+                                setImagePreview(e.target.value);
+                              }}
+                            />
+                          </div>
+                        </div>
                       </FormControl>
                       <FormDescription>
-                        Enter a URL for the product image
+                        Upload an image file or enter a URL. If no image is provided, a "No Image" placeholder will be used.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -484,16 +518,16 @@ const AdminProductForm = () => {
                 />
 
                 {/* Image Preview */}
-                {form.watch("image") && (
+                {(imagePreview || form.watch("image")) && (
                   <div className="border rounded-md p-3">
                     <p className="text-sm font-medium mb-2">Image Preview</p>
                     <div className="w-full h-48 rounded-md overflow-hidden bg-gray-100">
                       <img
-                        src={form.watch("image")}
+                        src={imagePreview || form.watch("image") || "/api/placeholder/300/300?text=No+Image"}
                         alt="Product preview"
                         className="w-full h-full object-contain"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = "https://placehold.co/400x300?text=Image+Not+Found";
+                          (e.target as HTMLImageElement).src = "/api/placeholder/300/300?text=No+Image";
                         }}
                       />
                     </div>
