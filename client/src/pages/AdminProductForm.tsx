@@ -103,7 +103,7 @@ const AdminProductForm = () => {
     isLoading: productLoading, 
     error: productError 
   } = useQuery<ProductWithCategory>({
-    queryKey: [`/api/products/${id}`],
+    queryKey: [`/api/admin/products/${id}`],
     enabled: isEditMode,
   });
 

@@ -113,15 +113,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/products/:id", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
-      console.log("Fetching product with ID:", id);
-      
       if (isNaN(id)) {
         return res.status(400).json({ message: "Invalid product ID" });
       }
       
       const product = await storage.getProductById(id);
-      console.log("Product found:", product);
-      
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
@@ -134,7 +130,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(productWithCategory);
     } catch (error) {
-      console.error("Error fetching product:", error);
       res.status(500).json({ message: "Failed to fetch product" });
     }
   });
