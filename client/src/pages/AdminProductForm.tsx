@@ -128,12 +128,16 @@ const AdminProductForm = () => {
   // Update form values when product data is loaded
   useEffect(() => {
     if (product && isEditMode) {
+      // Set image preview from existing product data
+      const productImage = product.image || "/api/placeholder/300/300?text=No+Image";
+      setImagePreview(productImage);
+      
       form.reset({
         name: product.name,
         slug: product.slug,
         description: product.description,
         price: product.price,
-        image: product.image,
+        image: productImage,
         categoryId: product.categoryId,
         featured: product.featured,
         isBestseller: product.isBestseller,
@@ -518,21 +522,19 @@ const AdminProductForm = () => {
                 />
 
                 {/* Image Preview */}
-                {(imagePreview || form.watch("image")) && (
-                  <div className="border rounded-md p-3">
-                    <p className="text-sm font-medium mb-2">Image Preview</p>
-                    <div className="w-full h-48 rounded-md overflow-hidden bg-gray-100">
-                      <img
-                        src={imagePreview || form.watch("image") || "/api/placeholder/300/300?text=No+Image"}
-                        alt="Product preview"
-                        className="w-full h-full object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/api/placeholder/300/300?text=No+Image";
-                        }}
-                      />
-                    </div>
+                <div className="border rounded-md p-3">
+                  <p className="text-sm font-medium mb-2">Image Preview</p>
+                  <div className="w-full h-48 rounded-md overflow-hidden bg-gray-100">
+                    <img
+                      src={imagePreview || form.watch("image") || "/api/placeholder/300/300?text=No+Image"}
+                      alt="Product preview"
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "/api/placeholder/300/300?text=No+Image";
+                      }}
+                    />
                   </div>
-                )}
+                </div>
 
                 {/* Product Status */}
                 <div className="space-y-4">
