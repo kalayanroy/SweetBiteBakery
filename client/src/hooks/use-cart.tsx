@@ -4,9 +4,9 @@ import { useToast } from '@/hooks/use-toast';
 
 interface CartContextType {
   cart: Cart;
-  addToCart: (product: ProductWithCategory) => void;
-  removeFromCart: (productId: number) => void;
-  updateCartItemQuantity: (productId: number, quantity: number) => void;
+  addToCart: (product: ProductWithCategory, options?: { size?: string; color?: string; price?: number }) => void;
+  removeFromCart: (productId: number, size?: string, color?: string) => void;
+  updateCartItemQuantity: (productId: number, quantity: number, size?: string, color?: string) => void;
   clearCart: () => void;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
@@ -50,10 +50,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   // Add item to cart
-  const addToCart = (product: ProductWithCategory) => {
+  const addToCart = (product: ProductWithCategory, options?: { size?: string; color?: string; price?: number }) => {
+    const { size, color, price } = options || {};
+    const actualPrice = price !== undefined ? price : product.price;
+    
     setCart(prevCart => {
+      // Find existing item with same product, size, and color
       const existingItemIndex = prevCart.items.findIndex(
-        item => item.productId === product.id
+        item => item.productId === product.id && 
+                item.size === size && 
+                item.color === color
       );
       
       let updatedItems;
@@ -72,9 +78,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           {
             productId: product.id,
             name: product.name,
-            price: product.price,
+            price: actualPrice,
             image: product.image,
-            quantity: 1
+            quantity: 1,
+            size,
+            color,
           }
         ];
       }
@@ -87,9 +95,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     // Show toast and open cart sidebar after state update
+    const variantText = (size || color) ? ` (${[size, color].filter(Boolean).join(', ')})` : '';
     toast({
       title: "Added to cart",
-      description: `${product.name} has been added to your cart`,
+      description: `${product.name}${variantText} has been added to your cart`,
     });
     
     if (!isOpen) {

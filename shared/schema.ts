@@ -23,8 +23,9 @@ export const products = pgTable("products", {
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description").notNull(),
-  price: doublePrecision("price").notNull(),
-  image: text("image").notNull(),
+  price: doublePrecision("price").notNull(), // Base price (used when no variations)
+  image: text("image").notNull(), // Primary image for backward compatibility
+  images: text("images").array().default([]), // Multiple images
   categoryId: integer("category_id").notNull(),
   featured: boolean("featured").default(false),
   isBestseller: boolean("is_bestseller").default(false),
@@ -33,6 +34,7 @@ export const products = pgTable("products", {
   dietaryOptions: jsonb("dietary_options").default([]),
   sizes: text("sizes").array().default([]),
   colors: text("colors").array().default([]),
+  priceVariations: jsonb("price_variations").default({}), // { "size-color": price }
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -42,6 +44,7 @@ export const insertProductSchema = createInsertSchema(products).pick({
   description: true,
   price: true,
   image: true,
+  images: true,
   categoryId: true,
   featured: true,
   isBestseller: true,
@@ -50,6 +53,7 @@ export const insertProductSchema = createInsertSchema(products).pick({
   dietaryOptions: true,
   sizes: true,
   colors: true,
+  priceVariations: true,
 });
 
 export type InsertProduct = z.infer<typeof insertProductSchema>;
@@ -134,6 +138,8 @@ export const cartSchema = z.object({
     name: z.string(),
     price: z.number(),
     image: z.string(),
+    size: z.string().optional(), // Selected size variant
+    color: z.string().optional(), // Selected color variant
   })),
   subtotal: z.number(),
 });

@@ -29,19 +29,18 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { 
   ArrowLeft, Loader2, Save, 
-  AlertTriangle, AlertCircle, Plus, Upload, Image as ImageIcon
+  AlertTriangle, AlertCircle, Plus, Upload, Image as ImageIcon, X, Trash2
 } from "lucide-react";
 import { slugify } from "@/lib/utils";
 
 // Extend product schema for the form
 const productFormSchema = insertProductSchema.extend({
-  // Make some fields optional for the form
   slug: z.string().optional(),
 }).refine(
   data => {
-    // If slug is not provided, ensure name is
     return data.slug !== undefined || (data.name !== undefined && data.name.length > 0);
   },
   {
@@ -68,9 +67,18 @@ const AdminProductForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreatingCategory, setIsCreatingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   const isEditMode = !!id;
+
+  // Chip-based input states
+  const [sizeInput, setSizeInput] = useState("");
+  const [colorInput, setColorInput] = useState("");
+  const [sizes, setSizes] = useState<string[]>([]);
+  const [colors, setColors] = useState<string[]>([]);
+
+  // Price variations state
+  const [priceVariations, setPriceVariations] = useState<Record<string, number>>({});
 
   // Check for admin authentication
   useEffect(() => {
@@ -116,6 +124,7 @@ const AdminProductForm = () => {
       description: "",
       price: 0,
       image: "",
+      images: [],
       categoryId: undefined,
       featured: false,
       isBestseller: false,
@@ -124,15 +133,26 @@ const AdminProductForm = () => {
       dietaryOptions: [],
       sizes: [],
       colors: [],
+      priceVariations: {},
     },
   });
 
   // Update form values when product data is loaded
   useEffect(() => {
     if (product && isEditMode) {
-      // Set image preview from existing product data
       const productImage = product.image || "/api/placeholder/300/300?text=No+Image";
       setImagePreview(productImage);
+      
+      const productImages = Array.isArray(product.images) ? product.images : [];
+      setAdditionalImages(productImages);
+
+      const productSizes = Array.isArray(product.sizes) ? product.sizes as string[] : [];
+      const productColors = Array.isArray(product.colors) ? product.colors as string[] : [];
+      setSizes(productSizes);
+      setColors(productColors);
+
+      const productPriceVariations = (product.priceVariations as Record<string, number>) || {};
+      setPriceVariations(productPriceVariations);
       
       form.reset({
         name: product.name,
@@ -140,6 +160,7 @@ const AdminProductForm = () => {
         description: product.description,
         price: product.price,
         image: productImage,
+        images: productImages,
         categoryId: product.categoryId,
         featured: product.featured,
         isBestseller: product.isBestseller,
@@ -148,12 +169,9 @@ const AdminProductForm = () => {
         dietaryOptions: Array.isArray(product.dietaryOptions) 
           ? product.dietaryOptions as string[] 
           : [],
-        sizes: Array.isArray(product.sizes) 
-          ? product.sizes as string[] 
-          : [],
-        colors: Array.isArray(product.colors) 
-          ? product.colors as string[] 
-          : [],
+        sizes: productSizes,
+        colors: productColors,
+        priceVariations: productPriceVariations,
       });
     }
   }, [product, isEditMode, form]);
@@ -172,11 +190,10 @@ const AdminProductForm = () => {
     return () => subscription.unsubscribe();
   }, [form]);
 
-  // Handle image file selection
+  // Handle primary image file selection
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -184,6 +201,92 @@ const AdminProductForm = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  // Handle additional images upload
+  const handleAdditionalImagesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      const fileArray = Array.from(files);
+      fileArray.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const newImage = reader.result as string;
+          setAdditionalImages(prev => [...prev, newImage]);
+          form.setValue("images", [...additionalImages, newImage]);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
+
+  // Remove additional image
+  const removeAdditionalImage = (index: number) => {
+    const newImages = additionalImages.filter((_, i) => i !== index);
+    setAdditionalImages(newImages);
+    form.setValue("images", newImages);
+  };
+
+  // Add size chip
+  const addSize = () => {
+    if (sizeInput.trim() && !sizes.includes(sizeInput.trim())) {
+      const newSizes = [...sizes, sizeInput.trim()];
+      setSizes(newSizes);
+      form.setValue("sizes", newSizes);
+      setSizeInput("");
+    }
+  };
+
+  // Remove size chip
+  const removeSize = (size: string) => {
+    const newSizes = sizes.filter(s => s !== size);
+    setSizes(newSizes);
+    form.setValue("sizes", newSizes);
+    
+    // Remove price variations associated with this size
+    const newPriceVariations = { ...priceVariations };
+    Object.keys(newPriceVariations).forEach(key => {
+      if (key.startsWith(`${size}-`)) {
+        delete newPriceVariations[key];
+      }
+    });
+    setPriceVariations(newPriceVariations);
+    form.setValue("priceVariations", newPriceVariations);
+  };
+
+  // Add color chip
+  const addColor = () => {
+    if (colorInput.trim() && !colors.includes(colorInput.trim())) {
+      const newColors = [...colors, colorInput.trim()];
+      setColors(newColors);
+      form.setValue("colors", newColors);
+      setColorInput("");
+    }
+  };
+
+  // Remove color chip
+  const removeColor = (color: string) => {
+    const newColors = colors.filter(c => c !== color);
+    setColors(newColors);
+    form.setValue("colors", newColors);
+    
+    // Remove price variations associated with this color
+    const newPriceVariations = { ...priceVariations };
+    Object.keys(newPriceVariations).forEach(key => {
+      if (key.endsWith(`-${color}`)) {
+        delete newPriceVariations[key];
+      }
+    });
+    setPriceVariations(newPriceVariations);
+    form.setValue("priceVariations", newPriceVariations);
+  };
+
+  // Update price variation
+  const updatePriceVariation = (size: string, color: string, price: number) => {
+    const key = `${size}-${color}`;
+    const newPriceVariations = { ...priceVariations, [key]: price };
+    setPriceVariations(newPriceVariations);
+    form.setValue("priceVariations", newPriceVariations);
   };
 
   // Create new category
@@ -197,10 +300,8 @@ const AdminProductForm = () => {
         slug: slugify(newCategoryName)
       });
       
-      // Refresh categories
       queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
       
-      // Set the new category as selected  
       const categoryData = newCategory as any;
       form.setValue("categoryId", categoryData.id);
       setNewCategoryName("");
@@ -221,28 +322,30 @@ const AdminProductForm = () => {
   };
 
   const onSubmit = async (data: ProductFormValues) => {
-    // Ensure slug is generated if not provided
     if (!data.slug && data.name) {
       data.slug = slugify(data.name);
     }
 
-    // Set default "No Image" if no image provided
     if (!data.image || data.image.trim() === "") {
       data.image = "/api/placeholder/300/300?text=No+Image";
     }
+
+    // Ensure sizes and colors are set
+    data.sizes = sizes;
+    data.colors = colors;
+    data.images = additionalImages;
+    data.priceVariations = priceVariations;
 
     setIsSubmitting(true);
     
     try {
       if (isEditMode) {
-        // Update existing product
         await apiRequest("PUT", `/api/admin/products/${id}`, data);
         toast({
           title: "Product updated",
           description: "The product has been successfully updated",
         });
       } else {
-        // Create new product
         await apiRequest("POST", "/api/admin/products", data);
         toast({
           title: "Product created",
@@ -250,12 +353,10 @@ const AdminProductForm = () => {
         });
       }
       
-      // Invalidate queries to refresh data
       queryClient.invalidateQueries({
         queryKey: ['/api/products'],
       });
       
-      // Navigate back to products list
       navigate("/admin/products");
     } catch (error) {
       console.error("Form submission error:", error);
@@ -269,7 +370,6 @@ const AdminProductForm = () => {
     }
   };
 
-  // Show loading state while fetching data in edit mode
   if (isEditMode && productLoading) {
     return (
       <AdminLayout>
@@ -283,7 +383,6 @@ const AdminProductForm = () => {
     );
   }
 
-  // Show error if product not found in edit mode
   if (isEditMode && productError) {
     return (
       <AdminLayout>
@@ -296,7 +395,7 @@ const AdminProductForm = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="mb-4">Could not load the requested product. It may have been deleted or you don't have permission to view it.</p>
+              <p className="mb-4">Could not load the requested product.</p>
               <Button onClick={() => navigate("/admin/products")}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Products
               </Button>
@@ -320,6 +419,7 @@ const AdminProductForm = () => {
             variant="ghost"
             onClick={() => navigate("/admin/products")}
             className="mr-4"
+            data-testid="button-back"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
@@ -342,7 +442,7 @@ const AdminProductForm = () => {
                       <FormItem>
                         <FormLabel>Product Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g. Chocolate Cake" {...field} />
+                          <Input placeholder="e.g. Chocolate Cake" {...field} data-testid="input-product-name" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -357,7 +457,7 @@ const AdminProductForm = () => {
                       <FormItem>
                         <FormLabel>Slug</FormLabel>
                         <FormControl>
-                          <Input placeholder="chocolate-cake" {...field} />
+                          <Input placeholder="chocolate-cake" {...field} data-testid="input-slug" />
                         </FormControl>
                         <FormDescription>
                           Used in the product URL. Auto-generated from name.
@@ -367,29 +467,33 @@ const AdminProductForm = () => {
                     )}
                   />
 
-                  {/* Product Price */}
+                  {/* Base Price */}
                   <FormField
                     control={form.control}
                     name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Price ($)</FormLabel>
+                        <FormLabel>Base Price (BDT)</FormLabel>
                         <FormControl>
                           <Input 
                             type="number" 
                             step="0.01" 
                             min="0"
-                            placeholder="19.99" 
+                            placeholder="299" 
                             {...field}
                             onChange={e => field.onChange(parseFloat(e.target.value))}
+                            data-testid="input-price"
                           />
                         </FormControl>
+                        <FormDescription>
+                          Default price (used when no size/color variations)
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  {/* Category with instant creation */}
+                  {/* Category */}
                   <FormField
                     control={form.control}
                     name="categoryId"
@@ -403,7 +507,7 @@ const AdminProductForm = () => {
                             value={field.value?.toString()}
                           >
                             <FormControl>
-                              <SelectTrigger className="flex-1">
+                              <SelectTrigger className="flex-1" data-testid="select-category">
                                 <SelectValue placeholder="Select a category" />
                               </SelectTrigger>
                             </FormControl>
@@ -418,7 +522,7 @@ const AdminProductForm = () => {
                           
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button type="button" variant="outline" size="icon">
+                              <Button type="button" variant="outline" size="icon" data-testid="button-add-category">
                                 <Plus className="h-4 w-4" />
                               </Button>
                             </DialogTrigger>
@@ -431,6 +535,7 @@ const AdminProductForm = () => {
                                   placeholder="Category name"
                                   value={newCategoryName}
                                   onChange={(e) => setNewCategoryName(e.target.value)}
+                                  data-testid="input-new-category"
                                 />
                                 <div className="flex justify-end gap-2">
                                   <Button
@@ -444,6 +549,7 @@ const AdminProductForm = () => {
                                     type="button"
                                     onClick={handleCreateCategory}
                                     disabled={isCreatingCategory || !newCategoryName.trim()}
+                                    data-testid="button-create-category"
                                   >
                                     {isCreatingCategory && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     Create
@@ -470,7 +576,8 @@ const AdminProductForm = () => {
                         <Textarea 
                           placeholder="Describe your product..." 
                           rows={4} 
-                          {...field} 
+                          {...field}
+                          data-testid="textarea-description"
                         />
                       </FormControl>
                       <FormMessage />
@@ -478,212 +585,270 @@ const AdminProductForm = () => {
                   )}
                 />
 
-                {/* Sizes and Colors */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Sizes */}
-                  <FormField
-                    control={form.control}
-                    name="sizes"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Sizes</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="e.g. Small, Medium, Large" 
-                            value={Array.isArray(field.value) ? field.value.join(", ") : ""}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              const sizesArray = value ? value.split(",").map(s => s.trim()).filter(s => s) : [];
-                              field.onChange(sizesArray);
-                            }}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Enter sizes separated by commas (e.g., Small, Medium, Large)
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Colors */}
-                  <FormField
-                    control={form.control}
-                    name="colors"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Colors</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="e.g. Red, Blue, Green" 
-                            value={Array.isArray(field.value) ? field.value.join(", ") : ""}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              const colorsArray = value ? value.split(",").map(c => c.trim()).filter(c => c) : [];
-                              field.onChange(colorsArray);
-                            }}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Enter colors separated by commas (e.g., Red, Blue, Green)
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Image Upload */}
-                <FormField
-                  control={form.control}
-                  name="image"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Product Image</FormLabel>
-                      <FormControl>
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-4">
-                            <Input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageChange}
-                              className="hidden"
-                              id="image-upload"
-                            />
-                            <label
-                              htmlFor="image-upload"
-                              className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
-                            >
-                              <Upload className="mr-2 h-4 w-4" />
-                              Choose Image
-                            </label>
-                            <span className="text-sm text-gray-500">
-                              {imageFile ? imageFile.name : "No file selected"}
-                            </span>
-                          </div>
-                          
-                          {/* Alternative URL input */}
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-600">Or enter image URL:</label>
-                            <Input 
-                              placeholder="https://example.com/image.jpg" 
-                              value={field.value || ""}
-                              onChange={(e) => {
-                                field.onChange(e.target.value);
-                                setImagePreview(e.target.value);
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </FormControl>
-                      <FormDescription>
-                        Upload an image file or enter a URL. If no image is provided, a "No Image" placeholder will be used.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Image Preview */}
-                <div className="border rounded-md p-3">
-                  <p className="text-sm font-medium mb-2">Image Preview</p>
-                  <div className="w-full h-48 rounded-md overflow-hidden bg-gray-100">
-                    <img
-                      src={imagePreview || form.watch("image") || "/api/placeholder/300/300?text=No+Image"}
-                      alt="Product preview"
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/api/placeholder/300/300?text=No+Image";
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Product Status */}
+                {/* Primary Image Upload */}
                 <div className="space-y-4">
-                  <FormLabel>Product Status</FormLabel>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="featured"
-                      render={({ field }) => (
-                        <FormItem className="flex items-start space-x-3 space-y-0">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel>Featured</FormLabel>
-                            <FormDescription>
-                              Display this product on the homepage
-                            </FormDescription>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="isBestseller"
-                      render={({ field }) => (
-                        <FormItem className="flex items-start space-x-3 space-y-0">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel>Bestseller</FormLabel>
-                            <FormDescription>
-                              Mark as a bestselling product
-                            </FormDescription>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="isNew"
-                      render={({ field }) => (
-                        <FormItem className="flex items-start space-x-3 space-y-0">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel>New</FormLabel>
-                            <FormDescription>
-                              Mark as a new product
-                            </FormDescription>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="isPopular"
-                      render={({ field }) => (
-                        <FormItem className="flex items-start space-x-3 space-y-0">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div className="space-y-1 leading-none">
-                            <FormLabel>Popular</FormLabel>
-                            <FormDescription>
-                              Mark as a popular product
-                            </FormDescription>
-                          </div>
-                        </FormItem>
-                      )}
+                  <FormLabel>Primary Product Image</FormLabel>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-4">
+                      <Input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="flex-1"
+                        data-testid="input-primary-image"
+                      />
+                    </div>
+                    {imagePreview && (
+                      <div className="relative w-48 h-48 border-2 border-gray-300 rounded-lg overflow-hidden">
+                        <img 
+                          src={imagePreview} 
+                          alt="Primary preview" 
+                          className="w-full h-full object-cover"
+                          data-testid="img-primary-preview"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Additional Images Upload */}
+                <div className="space-y-4">
+                  <FormLabel>Additional Images</FormLabel>
+                  <div className="flex items-center gap-4 mb-4">
+                    <Input 
+                      type="file" 
+                      accept="image/*"
+                      multiple
+                      onChange={handleAdditionalImagesChange}
+                      className="flex-1"
+                      data-testid="input-additional-images"
                     />
                   </div>
+                  {additionalImages.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                      {additionalImages.map((img, index) => (
+                        <div key={index} className="relative group">
+                          <div className="relative w-full h-32 border-2 border-gray-300 rounded-lg overflow-hidden">
+                            <img 
+                              src={img} 
+                              alt={`Additional ${index + 1}`} 
+                              className="w-full h-full object-cover"
+                              data-testid={`img-additional-${index}`}
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removeAdditionalImage(index)}
+                            data-testid={`button-remove-image-${index}`}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Sizes - Chip-based Input */}
+                <div className="space-y-4">
+                  <FormLabel>Product Sizes</FormLabel>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter size (e.g., Small)"
+                      value={sizeInput}
+                      onChange={(e) => setSizeInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addSize();
+                        }
+                      }}
+                      data-testid="input-size"
+                    />
+                    <Button type="button" onClick={addSize} data-testid="button-add-size">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {sizes.map((size, index) => (
+                      <Badge key={index} variant="secondary" className="px-3 py-2 text-sm" data-testid={`badge-size-${index}`}>
+                        {size}
+                        <button
+                          type="button"
+                          onClick={() => removeSize(size)}
+                          className="ml-2 hover:text-red-600"
+                          data-testid={`button-remove-size-${index}`}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Colors - Chip-based Input */}
+                <div className="space-y-4">
+                  <FormLabel>Product Colors</FormLabel>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter color (e.g., Red)"
+                      value={colorInput}
+                      onChange={(e) => setColorInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addColor();
+                        }
+                      }}
+                      data-testid="input-color"
+                    />
+                    <Button type="button" onClick={addColor} data-testid="button-add-color">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {colors.map((color, index) => (
+                      <Badge key={index} variant="secondary" className="px-3 py-2 text-sm" data-testid={`badge-color-${index}`}>
+                        {color}
+                        <button
+                          type="button"
+                          onClick={() => removeColor(color)}
+                          className="ml-2 hover:text-red-600"
+                          data-testid={`button-remove-color-${index}`}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Price Variations Matrix */}
+                {sizes.length > 0 && colors.length > 0 && (
+                  <div className="space-y-4">
+                    <div>
+                      <FormLabel>Price Variations</FormLabel>
+                      <FormDescription>
+                        Set specific prices for each size and color combination
+                      </FormDescription>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse border border-gray-300 dark:border-gray-700">
+                        <thead>
+                          <tr className="bg-gray-100 dark:bg-gray-800">
+                            <th className="border border-gray-300 dark:border-gray-700 p-2 text-left">Size / Color</th>
+                            {colors.map((color, index) => (
+                              <th key={index} className="border border-gray-300 dark:border-gray-700 p-2 text-center" data-testid={`header-color-${index}`}>
+                                {color}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sizes.map((size, sizeIndex) => (
+                            <tr key={sizeIndex}>
+                              <td className="border border-gray-300 dark:border-gray-700 p-2 font-semibold" data-testid={`row-size-${sizeIndex}`}>
+                                {size}
+                              </td>
+                              {colors.map((color, colorIndex) => {
+                                const key = `${size}-${color}`;
+                                return (
+                                  <td key={colorIndex} className="border border-gray-300 dark:border-gray-700 p-2">
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      min="0"
+                                      placeholder="Price"
+                                      value={priceVariations[key] || ""}
+                                      onChange={(e) => updatePriceVariation(size, color, parseFloat(e.target.value) || 0)}
+                                      className="w-full"
+                                      data-testid={`input-price-${sizeIndex}-${colorIndex}`}
+                                    />
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Product Flags */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="featured"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-featured"
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Featured</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="isBestseller"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-bestseller"
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Bestseller</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="isNew"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-new"
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">New</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="isPopular"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="checkbox-popular"
+                          />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Popular</FormLabel>
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 {/* Dietary Options */}
@@ -692,44 +857,32 @@ const AdminProductForm = () => {
                   name="dietaryOptions"
                   render={() => (
                     <FormItem>
-                      <div className="mb-4">
-                        <FormLabel>Dietary Options</FormLabel>
-                        <FormDescription>
-                          Select the dietary options that apply to this product
-                        </FormDescription>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormLabel>Dietary Options</FormLabel>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {dietaryOptions.map((option) => (
                           <FormField
                             key={option.id}
                             control={form.control}
                             name="dietaryOptions"
-                            render={({ field }) => {
-                              return (
-                                <FormItem
-                                  key={option.id}
-                                  className="flex items-start space-x-3 space-y-0"
-                                >
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(option.id)}
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([...field.value, option.id])
-                                          : field.onChange(
-                                              field.value?.filter(
-                                                (value) => value !== option.id
-                                              )
-                                            )
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="text-sm font-normal cursor-pointer">
-                                    {option.label}
-                                  </FormLabel>
-                                </FormItem>
-                              )
-                            }}
+                            render={({ field }) => (
+                              <FormItem className="flex items-center space-x-2 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={field.value?.includes(option.id)}
+                                    onCheckedChange={(checked) => {
+                                      const current = field.value || [];
+                                      return checked
+                                        ? field.onChange([...current, option.id])
+                                        : field.onChange(current.filter((value) => value !== option.id));
+                                    }}
+                                    data-testid={`checkbox-dietary-${option.id}`}
+                                  />
+                                </FormControl>
+                                <FormLabel className="font-normal cursor-pointer">
+                                  {option.label}
+                                </FormLabel>
+                              </FormItem>
+                            )}
                           />
                         ))}
                       </div>
@@ -739,23 +892,22 @@ const AdminProductForm = () => {
                 />
 
                 {/* Submit Button */}
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-4">
                   <Button
-                    type="submit"
-                    className="bg-primary text-white"
-                    disabled={isSubmitting}
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate("/admin/products")}
+                    data-testid="button-cancel"
                   >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {isEditMode ? "Updating..." : "Creating..."}
-                      </>
-                    ) : (
-                      <>
-                        <Save className="mr-2 h-4 w-4" />
-                        {isEditMode ? "Update Product" : "Create Product"}
-                      </>
-                    )}
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    data-testid="button-submit"
+                  >
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isEditMode ? "Update" : "Create"} Product
                   </Button>
                 </div>
               </form>

@@ -4,7 +4,7 @@ import { useParams, Link } from "wouter";
 import { Helmet } from "react-helmet";
 import { 
   ShoppingCart, ChevronRight, Award, Heart, Clock, 
-  Leaf, Shield, Truck, ChefHat, Sparkles, Star
+  Leaf, Shield, Truck, ChefHat, Sparkles, Star, ChevronLeft
 } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { useCart } from "@/hooks/use-cart";
@@ -21,11 +21,37 @@ const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [selectedColor, setSelectedColor] = useState<string>("");
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const { data: product, isLoading, error } = useQuery<ProductWithCategory>({
     queryKey: [`/api/products/${slug}`],
     enabled: !!slug,
   });
+
+  // Get all images (primary + additional)
+  const allImages = product ? [
+    product.image,
+    ...(Array.isArray(product.images) ? product.images : [])
+  ].filter(img => img && img.trim() !== "") : [];
+
+  // Calculate current price based on size and color
+  const getCurrentPrice = (): number => {
+    if (!product) return 0;
+    
+    // If both size and color are selected and variations exist
+    if (selectedSize && selectedColor && product.priceVariations) {
+      const key = `${selectedSize}-${selectedColor}`;
+      const variations = product.priceVariations as Record<string, number>;
+      if (variations[key]) {
+        return variations[key];
+      }
+    }
+    
+    // Return base price
+    return product.price;
+  };
+
+  const currentPrice = getCurrentPrice();
 
   // Set default selections when product data loads
   useEffect(() => {
@@ -61,8 +87,13 @@ const ProductDetails = () => {
         return;
       }
 
+      // Add to cart with selected variant information
       for (let i = 0; i < quantity; i++) {
-        addToCart(product);
+        addToCart(product, {
+          size: selectedSize || undefined,
+          color: selectedColor || undefined,
+          price: currentPrice,
+        });
       }
 
       toast({
@@ -70,6 +101,16 @@ const ProductDetails = () => {
         description: `${product.name} is ready for checkout. Fresh & delicious!`,
       });
     }
+  };
+
+  // Navigate to previous image
+  const previousImage = () => {
+    setCurrentImageIndex(prev => (prev === 0 ? allImages.length - 1 : prev - 1));
+  };
+
+  // Navigate to next image
+  const nextImage = () => {
+    setCurrentImageIndex(prev => (prev === allImages.length - 1 ? 0 : prev + 1));
   };
 
   if (isLoading) {
@@ -160,7 +201,7 @@ const ProductDetails = () => {
 
           {/* Main Product Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
-            {/* Product Image Section */}
+            {/* Product Image Gallery */}
             <div className="relative group">
               <div className="sticky top-8">
                 {/* Artisan Badge */}
@@ -183,19 +224,82 @@ const ProductDetails = () => {
                   </div>
                 )}
 
-                {/* Product Image with Bakery Frame */}
+                {/* Main Image with Navigation */}
                 <div className="relative overflow-hidden rounded-3xl shadow-2xl bg-white dark:bg-gray-800 border-8 border-white dark:border-gray-700">
                   <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--cream))]/20 to-transparent pointer-events-none"></div>
                   <img 
-                    src={product.image} 
+                    src={allImages[currentImageIndex] || product.image} 
                     alt={product.name} 
                     className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-500" 
                     style={{ minHeight: "400px", maxHeight: "600px" }}
                     data-testid="img-product"
                   />
+                  
+                  {/* Image Navigation Arrows */}
+                  {allImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={previousImage}
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 p-3 rounded-full shadow-lg hover:bg-white dark:hover:bg-gray-700 transition-colors"
+                        data-testid="button-prev-image"
+                      >
+                        <ChevronLeft className="w-6 h-6 text-[hsl(var(--cinnamon))]" />
+                      </button>
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 p-3 rounded-full shadow-lg hover:bg-white dark:hover:bg-gray-700 transition-colors"
+                        data-testid="button-next-image"
+                      >
+                        <ChevronRight className="w-6 h-6 text-[hsl(var(--cinnamon))]" />
+                      </button>
+                    </>
+                  )}
+                  
+                  {/* Image Indicator Dots */}
+                  {allImages.length > 1 && (
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                      {allImages.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentImageIndex(index)}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            index === currentImageIndex 
+                              ? "bg-[hsl(var(--cinnamon))] w-8" 
+                              : "bg-white/60 hover:bg-white/80"
+                          }`}
+                          data-testid={`button-image-dot-${index}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  
                   {/* Decorative Corner */}
                   <div className="absolute top-0 left-0 w-24 h-24 bg-gradient-to-br from-white/40 to-transparent"></div>
                 </div>
+
+                {/* Image Thumbnails */}
+                {allImages.length > 1 && (
+                  <div className="mt-4 grid grid-cols-4 gap-3">
+                    {allImages.slice(0, 4).map((img, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={`relative overflow-hidden rounded-xl border-4 transition-all ${
+                          index === currentImageIndex
+                            ? "border-[hsl(var(--cinnamon))] scale-105"
+                            : "border-white dark:border-gray-700 hover:border-[hsl(var(--honey))]"
+                        }`}
+                        data-testid={`button-thumbnail-${index}`}
+                      >
+                        <img 
+                          src={img} 
+                          alt={`${product.name} ${index + 1}`} 
+                          className="w-full h-20 object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 {/* Chef's Seal */}
                 <div className="mt-6 flex items-center justify-center space-x-2 text-[hsl(var(--cinnamon))]">
@@ -227,14 +331,19 @@ const ProductDetails = () => {
                   {product.name}
                 </h1>
 
-                {/* Price Display */}
+                {/* Dynamic Price Display */}
                 <div className="inline-block relative">
                   <div className="bg-gradient-to-r from-[hsl(var(--honey))] to-[hsl(var(--cinnamon))] text-white px-8 py-4 rounded-2xl shadow-xl">
                     <div className="flex items-baseline gap-2">
                       <span className="text-4xl md:text-5xl font-bold font-heading" data-testid="text-product-price">
-                        {formatCurrency(product.price)}
+                        {formatCurrency(currentPrice)}
                       </span>
                     </div>
+                    {selectedSize && selectedColor && currentPrice !== product.price && (
+                      <p className="text-xs text-white/80 mt-1">
+                        for {selectedSize} · {selectedColor}
+                      </p>
+                    )}
                   </div>
                   {/* Decorative Element */}
                   <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-[hsl(var(--blush))] rounded-full -z-10"></div>
@@ -371,7 +480,7 @@ const ProductDetails = () => {
                   data-testid="button-add-to-cart"
                 >
                   <ShoppingCart className="mr-3" size={24} />
-                  Add to Basket · {formatCurrency(product.price * quantity)}
+                  Add to Basket · {formatCurrency(currentPrice * quantity)}
                 </Button>
 
                 <p className="text-center text-sm text-gray-600 dark:text-gray-400 flex items-center justify-center gap-2">
