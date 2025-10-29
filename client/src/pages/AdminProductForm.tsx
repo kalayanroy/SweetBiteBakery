@@ -122,6 +122,8 @@ const AdminProductForm = () => {
       isNew: false,
       isPopular: false,
       dietaryOptions: [],
+      sizes: [],
+      colors: [],
     },
   });
 
@@ -145,6 +147,12 @@ const AdminProductForm = () => {
         isPopular: product.isPopular,
         dietaryOptions: Array.isArray(product.dietaryOptions) 
           ? product.dietaryOptions as string[] 
+          : [],
+        sizes: Array.isArray(product.sizes) 
+          ? product.sizes as string[] 
+          : [],
+        colors: Array.isArray(product.colors) 
+          ? product.colors as string[] 
           : [],
       });
     }
@@ -469,6 +477,61 @@ const AdminProductForm = () => {
                     </FormItem>
                   )}
                 />
+
+                {/* Sizes and Colors */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Sizes */}
+                  <FormField
+                    control={form.control}
+                    name="sizes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Sizes</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="e.g. Small, Medium, Large" 
+                            value={Array.isArray(field.value) ? field.value.join(", ") : ""}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              const sizesArray = value ? value.split(",").map(s => s.trim()).filter(s => s) : [];
+                              field.onChange(sizesArray);
+                            }}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Enter sizes separated by commas (e.g., Small, Medium, Large)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Colors */}
+                  <FormField
+                    control={form.control}
+                    name="colors"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Colors</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="e.g. Red, Blue, Green" 
+                            value={Array.isArray(field.value) ? field.value.join(", ") : ""}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              const colorsArray = value ? value.split(",").map(c => c.trim()).filter(c => c) : [];
+                              field.onChange(colorsArray);
+                            }}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Enter colors separated by commas (e.g., Red, Blue, Green)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 {/* Image Upload */}
                 <FormField

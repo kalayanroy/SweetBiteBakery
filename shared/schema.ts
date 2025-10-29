@@ -31,6 +31,8 @@ export const products = pgTable("products", {
   isNew: boolean("is_new").default(false),
   isPopular: boolean("is_popular").default(false),
   dietaryOptions: jsonb("dietary_options").default([]),
+  sizes: text("sizes").array().default([]),
+  colors: text("colors").array().default([]),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -46,6 +48,8 @@ export const insertProductSchema = createInsertSchema(products).pick({
   isNew: true,
   isPopular: true,
   dietaryOptions: true,
+  sizes: true,
+  colors: true,
 });
 
 export type InsertProduct = z.infer<typeof insertProductSchema>;
