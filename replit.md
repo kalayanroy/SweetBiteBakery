@@ -10,6 +10,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Currency Display Fix (October 29, 2025)**: Updated formatCurrency function to use English digits (0-9) instead of Bangla digits for all price displays. Changed locale from 'bn-BD' to 'en-US' while maintaining BDT currency format
 - **Cart Calculation Fix (June 18, 2025)**: Resolved cart calculation errors by updating product prices from USD to proper BDT amounts in database and clearing corrupted localStorage cache data
 - **React Warning Fix (June 18, 2025)**: Fixed React setState warning in CartProvider by moving localStorage operations to useEffect hook instead of during component initialization
 

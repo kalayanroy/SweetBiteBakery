@@ -6,8 +6,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number): string {
-  // Format as BDT (Bangladeshi Taka) with decimals when needed
-  return new Intl.NumberFormat('bn-BD', {
+  // Format as BDT (Bangladeshi Taka) with English digits
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'BDT',
     minimumFractionDigits: 0,
