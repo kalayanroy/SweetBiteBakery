@@ -10,6 +10,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Product Details Page Redesign (October 29, 2025)**: Completely redesigned ProductDetails page with modern UI/UX including interactive size and color selection, gradient styling, improved layout with sticky image on desktop, enhanced quantity controls, and toast notifications for user feedback. Implemented proper React state management using useEffect to prevent render loops.
 - **Product Size and Color Fields (October 29, 2025)**: Added size and color fields to products schema and admin form. Products can now have multiple sizes and colors entered as comma-separated values. Data is stored as text arrays in the database and properly validated during creation and editing.
 - **New Pages Added (October 29, 2025)**: Created dedicated About Us and Contact pages with full navigation integration. About Us page includes company story, mission, values, and history. Contact page features contact form with validation, contact information, business hours, and FAQ section.
 - **Currency Display Fix (October 29, 2025)**: Updated formatCurrency function to use English digits (0-9) instead of Bangla digits for all price displays. Changed locale from 'bn-BD' to 'en-US' while maintaining BDT currency format
