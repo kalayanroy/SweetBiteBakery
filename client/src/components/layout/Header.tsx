@@ -94,14 +94,20 @@ const Header = () => {
                   )}
                 </div>
               </Link>
-              <Link href="/#about">
-                <div className="text-text-dark hover:text-primary transition-colors duration-300 font-semibold cursor-pointer">
-                  About Us
+              <Link href="/about">
+                <div className={`text-text-dark hover:text-primary transition-colors duration-300 font-semibold relative cursor-pointer ${location === "/about" ? "text-primary" : ""}`}>
+                  <span>About Us</span>
+                  {location === "/about" && (
+                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full transform translate-y-1"></span>
+                  )}
                 </div>
               </Link>
-              <Link href="/#contact">
-                <div className="text-text-dark hover:text-primary transition-colors duration-300 font-semibold cursor-pointer">
-                  Contact
+              <Link href="/contact">
+                <div className={`text-text-dark hover:text-primary transition-colors duration-300 font-semibold relative cursor-pointer ${location === "/contact" ? "text-primary" : ""}`}>
+                  <span>Contact</span>
+                  {location === "/contact" && (
+                    <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full transform translate-y-1"></span>
+                  )}
                 </div>
               </Link>
             </nav>
@@ -231,15 +237,15 @@ const Header = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/#about" onClick={() => setMobileMenuOpen(false)}>
-                  <div className="text-lg font-medium text-text-dark">
+                <Link href="/about" onClick={() => setMobileMenuOpen(false)}>
+                  <div className={`text-lg font-medium ${location === "/about" ? "text-primary" : "text-text-dark"}`}>
                     About Us
                   </div>
                 </Link>
               </li>
               <li>
-                <Link href="/#contact" onClick={() => setMobileMenuOpen(false)}>
-                  <div className="text-lg font-medium text-text-dark">
+                <Link href="/contact" onClick={() => setMobileMenuOpen(false)}>
+                  <div className={`text-lg font-medium ${location === "/contact" ? "text-primary" : "text-text-dark"}`}>
                     Contact
                   </div>
                 </Link>

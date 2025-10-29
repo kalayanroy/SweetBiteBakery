@@ -10,6 +10,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **New Pages Added (October 29, 2025)**: Created dedicated About Us and Contact pages with full navigation integration. About Us page includes company story, mission, values, and history. Contact page features contact form with validation, contact information, business hours, and FAQ section.
 - **Currency Display Fix (October 29, 2025)**: Updated formatCurrency function to use English digits (0-9) instead of Bangla digits for all price displays. Changed locale from 'bn-BD' to 'en-US' while maintaining BDT currency format
 - **Cart Calculation Fix (June 18, 2025)**: Resolved cart calculation errors by updating product prices from USD to proper BDT amounts in database and clearing corrupted localStorage cache data
 - **React Warning Fix (June 18, 2025)**: Fixed React setState warning in CartProvider by moving localStorage operations to useEffect hook instead of during component initialization
@@ -80,6 +81,8 @@ In production:
    - `ProductDetails.tsx`: Detailed view of individual products
    - `Cart.tsx`: Shopping cart management
    - `Checkout.tsx`: Order placement and payment processing
+   - `AboutUs.tsx`: Company story, mission, values, and history
+   - `Contact.tsx`: Contact form, information, and FAQ
    - Admin pages for dashboard, product management, and authentication
 
 3. **Components**:

@@ -87,7 +87,7 @@ const Footer = () => {
             <h4 className="font-heading text-lg font-bold mb-6 text-white relative inline-block after:absolute after:w-10 after:h-0.5 after:bg-accent after:-bottom-2 after:left-0">Information</h4>
             <ul className="space-y-3">
               <li>
-                <Link href="/#about">
+                <Link href="/about">
                   <div className="text-gray-300 hover:text-accent hover:translate-x-1 transition-all duration-300 cursor-pointer flex items-center">
                     <span className="text-xs mr-2">•</span>About Us
                   </div>
@@ -109,7 +109,7 @@ const Footer = () => {
                 </div>
               </li>
               <li>
-                <Link href="/#contact">
+                <Link href="/contact">
                   <div className="text-gray-300 hover:text-accent hover:translate-x-1 transition-all duration-300 cursor-pointer flex items-center">
                     <span className="text-xs mr-2">•</span>Contact Us
                   </div>

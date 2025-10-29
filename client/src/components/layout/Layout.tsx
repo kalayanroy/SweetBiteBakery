@@ -52,7 +52,7 @@ const Layout = ({ children }: LayoutProps) => {
 
 // Helper function to format the total in a compact way
 function formatTotal(amount: number): string {
-  return new Intl.NumberFormat('bn-BD', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'BDT',
     minimumFractionDigits: 0,
