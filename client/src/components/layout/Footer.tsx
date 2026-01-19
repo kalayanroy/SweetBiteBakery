@@ -15,11 +15,11 @@ const Footer = () => {
               <p className="text-accent/80 text-sm uppercase tracking-widest font-semibold">Artisan Bakery</p>
             </div>
             <p className="mb-6 text-gray-300 leading-relaxed">
-              Crafting delightful memories with every bite since 2015. 
-              Our passion is baking happiness using only the finest ingredients 
+              Crafting delightful memories with every bite since 2015.
+              Our passion is baking happiness using only the finest ingredients
               and traditional recipes passed down through generations.
             </p>
-            
+
             {/* Contact Details */}
             <div className="space-y-3 text-gray-300">
               <div className="flex items-start">
@@ -40,7 +40,7 @@ const Footer = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Links Columns */}
           <div className="lg:col-span-2 md:mt-0 mt-6">
             <h4 className="font-heading text-lg font-bold mb-6 text-white relative inline-block after:absolute after:w-10 after:h-0.5 after:bg-accent after:-bottom-2 after:left-0">Shop</h4>
@@ -82,7 +82,7 @@ const Footer = () => {
               </li>
             </ul>
           </div>
-          
+
           <div className="lg:col-span-2">
             <h4 className="font-heading text-lg font-bold mb-6 text-white relative inline-block after:absolute after:w-10 after:h-0.5 after:bg-accent after:-bottom-2 after:left-0">Information</h4>
             <ul className="space-y-3">
@@ -117,7 +117,7 @@ const Footer = () => {
               </li>
             </ul>
           </div>
-          
+
           {/* Newsletter and Social Media */}
           <div className="lg:col-span-4 md:pt-0 pt-2">
             <h4 className="font-heading text-lg font-bold mb-6 text-white relative inline-block after:absolute after:w-10 after:h-0.5 after:bg-accent after:-bottom-2 after:left-0">Join Our Newsletter</h4>
@@ -125,16 +125,16 @@ const Footer = () => {
               Subscribe to receive updates, access to exclusive deals, and more.
             </p>
             <div className="flex mb-8">
-              <input 
-                type="email" 
-                placeholder="Your email address" 
+              <input
+                type="email"
+                placeholder="Your email address"
                 className="flex-1 bg-white/10 border border-white/20 px-4 py-3 rounded-l-md focus:outline-none focus:bg-white/20 text-white placeholder:text-gray-400"
               />
               <Button className="rounded-l-none bg-accent hover:bg-accent/90 text-primary px-4 py-3 flex items-center">
                 Subscribe <ArrowRight size={16} className="ml-2" />
               </Button>
             </div>
-            
+
             <div className="mt-8">
               <h5 className="text-white font-semibold mb-3">Follow Us</h5>
               <div className="flex space-x-4">
@@ -152,7 +152,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Bottom Bar */}
       <div className="border-t border-white/10 py-6">
         <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm">

@@ -14,16 +14,16 @@ const HeroSection = () => {
             </div>
 
             {/* Main headline with animated gradient */}
-            <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+            <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               Artisanal <span className="relative inline-block">
                 <span className="relative z-10 text-primary">Baked Goods</span>
-                <span className="absolute bottom-2 left-0 w-full h-4 bg-accent/25 -rotate-1 z-0"></span>
+                <span className="absolute bottom-1 sm:bottom-2 left-0 w-full h-3 sm:h-4 bg-accent/25 -rotate-1 z-0"></span>
               </span> Crafted With Passion
             </h1>
 
             {/* Description paragraph */}
-            <p className="text-text-dark text-lg mb-8 max-w-lg leading-relaxed">
-              Welcome to Probashi, where every treat tells a story. We create handcrafted pastries, cakes, 
+            <p className="text-text-dark text-base sm:text-lg mb-8 max-w-lg leading-relaxed">
+              Welcome to SweetBite, where every treat tells a story. We create handcrafted pastries, cakes,
               and breads using only the finest ingredients and time-honored recipes passed down through generations.
             </p>
 
@@ -43,7 +43,7 @@ const HeroSection = () => {
             </div>
 
             {/* Trust badges */}
-            <div className="mt-10 pt-8 border-t border-[#e3d9c8] grid grid-cols-3 gap-4">
+            <div className="mt-10 pt-8 border-t border-[#e3d9c8] grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-4">
               <div className="text-center">
                 <div className="text-primary font-heading font-bold text-xl">100%</div>
                 <div className="text-sm text-gray-600">Natural Ingredients</div>
@@ -64,15 +64,15 @@ const HeroSection = () => {
             {/* Decorative elements */}
             <div className="absolute -top-8 -left-8 w-24 h-24 bg-accent/30 rounded-full blur-xl z-0"></div>
             <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-primary/20 rounded-full blur-xl z-0"></div>
-            
+
             {/* Main image with decorative border */}
             <div className="relative z-10 p-3 bg-white rounded-2xl shadow-xl">
-              <img 
-                src="https://images.unsplash.com/photo-1608198093002-ad4e005484ec?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80" 
-                alt="Assorted luxury bakery goods display" 
+              <img
+                src="https://images.unsplash.com/photo-1608198093002-ad4e005484ec?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600&q=80"
+                alt="Assorted luxury bakery goods display"
                 className="rounded-xl shadow-sm w-full h-auto object-cover"
               />
-              
+
               {/* Floating badge */}
               <div className="absolute -right-5 -bottom-5 bg-white px-6 py-3 rounded-lg shadow-md">
                 <div className="text-primary font-heading font-bold">Fresh Daily</div>
