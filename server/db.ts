@@ -3,7 +3,46 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "../shared/schema.js";
 
-neonConfig.webSocketConstructor = ws;
+// Custom WebSocket wrapper to fix Neon serverless ErrorEvent message setter issue
+class WebSocketWrapper extends ws {
+  constructor(url: string, protocols?: string | string[]) {
+    super(url, protocols);
+
+    const originalAddEventListener = this.addEventListener;
+    // @ts-ignore - necessary hack for property setter issue
+    this.addEventListener = function (type: string, listener: any, options?: any) {
+      if (type === 'error') {
+        const wrappedListener = (event: any) => {
+          // If the event is an ErrorEvent and message is read-only,
+          // we create a proxy or a copy that allows setting the message
+          if (event && event.constructor && event.constructor.name === 'ErrorEvent') {
+            // It's an ErrorEvent, potentially read-only
+            const proxy = new Proxy(event, {
+              get(target, prop) {
+                if (prop === 'message') return (target as any)._message || target.message;
+                return (target as any)[prop];
+              },
+              set(target, prop, value) {
+                if (prop === 'message') {
+                  (target as any)._message = value;
+                  return true;
+                }
+                (target as any)[prop] = value;
+                return true;
+              }
+            });
+            return listener.call(this, proxy);
+          }
+          return listener.call(this, event);
+        };
+        return originalAddEventListener.call(this, type as any, wrappedListener, options);
+      }
+      return originalAddEventListener.call(this, type as any, listener, options);
+    };
+  }
+}
+
+neonConfig.webSocketConstructor = WebSocketWrapper as any;
 
 // Make DATABASE_URL optional for local development
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -25,7 +64,7 @@ export const pool = DATABASE_URL ? new Pool({
 
 
 if (pool) {
-  pool.on('error', (err) => {
+  pool.on('error', (err: any) => {
     console.error('Unexpected error on idle client', err);
     // Don't exit the process here, let the pool handle reconnection
     // process.exit(-1);

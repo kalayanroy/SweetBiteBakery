@@ -12438,13 +12438,45 @@ __export(db_exports, {
 });
 import { Pool as Pool3, neonConfig as neonConfig2 } from "@neondatabase/serverless";
 import ws from "ws";
-var DATABASE_URL, pool, db, checkDatabaseConnection;
+var WebSocketWrapper, DATABASE_URL, pool, db, checkDatabaseConnection;
 var init_db2 = __esm({
   "server/db.ts"() {
     "use strict";
     init_neon_serverless();
     init_schema2();
-    neonConfig2.webSocketConstructor = ws;
+    WebSocketWrapper = class extends ws {
+      constructor(url, protocols) {
+        super(url, protocols);
+        const originalAddEventListener = this.addEventListener;
+        this.addEventListener = function(type, listener, options) {
+          if (type === "error") {
+            const wrappedListener = (event) => {
+              if (event && event.constructor && event.constructor.name === "ErrorEvent") {
+                const proxy = new Proxy(event, {
+                  get(target, prop) {
+                    if (prop === "message") return target._message || target.message;
+                    return target[prop];
+                  },
+                  set(target, prop, value) {
+                    if (prop === "message") {
+                      target._message = value;
+                      return true;
+                    }
+                    target[prop] = value;
+                    return true;
+                  }
+                });
+                return listener.call(this, proxy);
+              }
+              return listener.call(this, event);
+            };
+            return originalAddEventListener.call(this, type, wrappedListener, options);
+          }
+          return originalAddEventListener.call(this, type, listener, options);
+        };
+      }
+    };
+    neonConfig2.webSocketConstructor = WebSocketWrapper;
     DATABASE_URL = process.env.DATABASE_URL;
     if (!DATABASE_URL) {
       console.warn(
