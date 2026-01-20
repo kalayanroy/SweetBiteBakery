@@ -150,7 +150,7 @@ npm run db:push
 
 ### 13. Create PM2 Ecosystem File
 ```bash
-nano ecosystem.config.js
+nano ecosystem.config.cjs
 ```
 
 Add:
@@ -173,6 +173,8 @@ module.exports = {
 };
 ```
 
+**Note:** We use `.cjs` extension because the project uses ES modules.
+
 ### 14. Create Logs Directory
 ```bash
 mkdir -p logs
@@ -180,7 +182,7 @@ mkdir -p logs
 
 ### 15. Start Application with PM2
 ```bash
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 pm2 save
 pm2 startup
 ```

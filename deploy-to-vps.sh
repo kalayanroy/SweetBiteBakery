@@ -110,9 +110,9 @@ npm run build
 echo "Running database migrations..."
 npm run db:push
 
-# Create PM2 ecosystem file
+# Create PM2 ecosystem file (using .cjs for CommonJS in ES module project)
 echo "Creating PM2 configuration..."
-cat > ecosystem.config.js <<EOF
+cat > ecosystem.config.cjs <<EOF
 module.exports = {
   apps: [{
     name: 'sweetbite-bakery',
@@ -136,7 +136,7 @@ mkdir -p logs
 
 # Start application with PM2
 echo "Starting application with PM2..."
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 pm2 save
 pm2 startup
 
