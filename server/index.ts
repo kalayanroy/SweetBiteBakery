@@ -11,17 +11,48 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 // Trust Nginx proxy for secure cookies
 app.set('trust proxy', 1);
 
+// Initialize session store
+import connectPg from "connect-pg-simple";
+import { getPool } from "./db";
+const PgSession = connectPg(session);
+
+const pool = getPool();
+const isProduction = app.get('env') === 'production';
+
+// session debug logging
+console.log("--- AUTH DEBUG INFO ---");
+console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`Express Env: ${app.get('env')}`);
+console.log(`Is Production: ${isProduction}`);
+console.log(`Database URL present: ${!!process.env.DATABASE_URL}`);
+console.log(`Database Pool created: ${!!pool}`);
+console.log("-----------------------");
+
 // Add session middleware for user authentication
 app.use(session({
-  secret: 'sweetbite-bakery-secret',
+  store: pool ? new PgSession({
+    pool,
+    createTableIfMissing: true,
+  }) : undefined,
+  secret: process.env.SESSION_SECRET || 'sweetbite-bakery-secret',
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false, // Temporarily false to fix login behind Nginx
+    secure: isProduction, // True in production (requires HTTPS)
     sameSite: 'lax',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
   }
 }));
+
+// Debug middleware to check protocol and headers
+app.use((req, res, next) => {
+  if (req.path === '/api/auth/login' || req.path === '/api/admin/login') {
+    console.log(`[Login Attempt] Protocol: ${req.protocol}, Secure: ${req.secure}`);
+    console.log(`[Login Attempt] X-Forwarded-Proto: ${req.headers['x-forwarded-proto']}`);
+    console.log(`[Login Attempt] Session ID: ${req.sessionID}`);
+  }
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();

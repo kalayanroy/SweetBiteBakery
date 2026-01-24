@@ -102,6 +102,46 @@ async function createUsers() {
             console.log("Password: admin123");
             console.log("Email: admin@sweetbite.com");
             console.log("User ID:", adminUser.id);
+            console.log("User ID:", adminUser.id);
+            console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        }
+
+        // Check if 'kalayan' user exists (Requested by user)
+        const checkUserQuery = 'SELECT * FROM users WHERE username = $1';
+        const checkUserResult = await client.query(checkUserQuery, ['kalayan']);
+
+        if (checkUserResult.rows.length > 0) {
+            console.log("\n✅ User 'kalayan' already exists!");
+            // Optional: Update password to ensure it matches
+            const updatePassQuery = 'UPDATE users SET password = $1, is_admin = $2 WHERE username = $3';
+            await client.query(updatePassQuery, ['1234567', true, 'kalayan']);
+            console.log("Updated password to '1234567' and set as Admin.");
+        } else {
+            // Create kalayan user
+            const insertUserQuery = `
+                INSERT INTO users (username, email, password, name, is_admin, created_at)
+                VALUES ($1, $2, $3, $4, $5, NOW())
+                RETURNING *
+            `;
+
+            const userValues = [
+                'kalayan',
+                'kalayan@sweetbite.com',
+                '1234567', // Plain password as requested
+                'Kalayan User',
+                true // Set as admin for admin login test
+            ];
+
+            const userResult = await client.query(insertUserQuery, userValues);
+            const newUser = userResult.rows[0];
+
+            console.log("\n✅ User 'kalayan' created successfully!");
+            console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            console.log("📋 CREDENTIALS:");
+            console.log("Username: kalayan");
+            console.log("Password: 1234567");
+            console.log("Email: kalayan@sweetbite.com");
+            console.log("User ID:", newUser.id);
             console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         }
 

@@ -33,14 +33,14 @@ export function checkAuth(req: Request, res: Response, next: NextFunction) {
 }
 
 // Function to authenticate user
-export async function authenticateUser(credentials: LoginCredentials): Promise<{ success: boolean; userId?: number; isAdmin?: boolean; role?: string }> {
+export async function authenticateUser(credentials: LoginCredentials): Promise<{ success: boolean; userId?: number; isAdmin?: boolean; role?: string; error?: string }> {
   try {
     console.log('Trying to authenticate user:', credentials.username);
     const user = await storage.getUserByUsername(credentials.username);
 
     if (!user) {
       console.log('User not found');
-      return { success: false };
+      return { success: false, error: "User not found in database" };
     }
 
     console.log('User found, comparing credentials');
@@ -72,7 +72,8 @@ export async function authenticateUser(credentials: LoginCredentials): Promise<{
 
     if (!passwordMatches) {
       console.log('Password does not match');
-      return { success: false };
+      // DEBUG: Show what we compared (safe to log here in debug mode, remove later)
+      return { success: false, error: `Password mismatch. DB has: ${user.password?.substring(0, 3)}...` };
     }
 
     console.log('Login successful for user:', user.id);
@@ -84,7 +85,7 @@ export async function authenticateUser(credentials: LoginCredentials): Promise<{
     };
   } catch (error) {
     console.error('Error authenticating user:', error);
-    return { success: false };
+    return { success: false, error: "Internal authentication error" };
   }
 }
 

@@ -243,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.session.role = result.role;
         res.json({ success: true, isAdmin: result.isAdmin, role: result.role });
       } else {
-        res.status(401).json({ message: "Invalid credentials" });
+        res.status(401).json({ message: result.error || "Invalid credentials" });
       }
     } catch (error) {
       if (error instanceof ZodError) {
@@ -333,7 +333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           } : null
         });
       } else {
-        res.status(401).json({ message: "Invalid credentials" });
+        res.status(401).json({ message: result.error || "Invalid credentials" });
       }
     } catch (error) {
       if (error instanceof ZodError) {
