@@ -244,13 +244,9 @@ const AdminProductForm = () => {
     setSizes(newSizes);
     form.setValue("sizes", newSizes);
 
-    // Remove price variations associated with this size
+    // Remove price variation associated with this size
     const newPriceVariations = { ...priceVariations };
-    Object.keys(newPriceVariations).forEach(key => {
-      if (key.startsWith(`${size}-`)) {
-        delete newPriceVariations[key];
-      }
-    });
+    delete newPriceVariations[size];
     setPriceVariations(newPriceVariations);
     form.setValue("priceVariations", newPriceVariations);
   };
@@ -282,7 +278,14 @@ const AdminProductForm = () => {
     form.setValue("priceVariations", newPriceVariations);
   };
 
-  // Update price variation
+  // Update size-based price variation
+  const updateSizePriceVariation = (size: string, price: number) => {
+    const newPriceVariations = { ...priceVariations, [size]: price };
+    setPriceVariations(newPriceVariations);
+    form.setValue("priceVariations", newPriceVariations);
+  };
+
+  // Update price variation (for size-color combinations if needed)
   const updatePriceVariation = (size: string, color: string, price: number) => {
     const key = `${size}-${color}`;
     const newPriceVariations = { ...priceVariations, [key]: price };
@@ -489,7 +492,7 @@ const AdminProductForm = () => {
                           />
                         </FormControl>
                         <FormDescription>
-                          Default price (used when no size/color variations)
+                          Default price (used when no size-specific prices are set)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -740,11 +743,48 @@ const AdminProductForm = () => {
                   </div>
                 </div>
 
-                {/* Price Variations Matrix */}
+                {/* Size-Based Pricing */}
+                {sizes.length > 0 && (
+                  <div className="space-y-4">
+                    <div>
+                      <FormLabel>Size-Based Pricing</FormLabel>
+                      <FormDescription>
+                        Set specific prices for each size. Leave empty to use the base price.
+                      </FormDescription>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {sizes.map((size, index) => (
+                        <div key={index} className="flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-700 rounded-lg">
+                          <div className="flex-1">
+                            <label className="text-sm font-medium mb-1 block">{size}</label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              placeholder={`Price for ${size}`}
+                              value={priceVariations[size] || ""}
+                              onChange={(e) => updateSizePriceVariation(size, parseFloat(e.target.value) || 0)}
+                              className="w-full"
+                              data-testid={`input-size-price-${index}`}
+                            />
+                          </div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            BDT
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      💡 Tip: If a size doesn't have a price set, the base price (৳{form.watch("price") || 0}) will be used.
+                    </p>
+                  </div>
+                )}
+
+                {/* Price Variations Matrix (for size-color combinations) */}
                 {sizes.length > 0 && colors.length > 0 && (
                   <div className="space-y-4">
                     <div>
-                      <FormLabel>Price Variations</FormLabel>
+                      <FormLabel>Advanced Price Variations (Size × Color)</FormLabel>
                       <FormDescription>
                         Set specific prices for each size and color combination
                       </FormDescription>
@@ -801,7 +841,7 @@ const AdminProductForm = () => {
                       <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>
                           <Checkbox
-                            checked={field.value}
+                            checked={!!field.value}
                             onCheckedChange={field.onChange}
                             data-testid="checkbox-featured"
                           />
@@ -818,7 +858,7 @@ const AdminProductForm = () => {
                       <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>
                           <Checkbox
-                            checked={field.value}
+                            checked={!!field.value}
                             onCheckedChange={field.onChange}
                             data-testid="checkbox-bestseller"
                           />
@@ -835,7 +875,7 @@ const AdminProductForm = () => {
                       <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>
                           <Checkbox
-                            checked={field.value}
+                            checked={!!field.value}
                             onCheckedChange={field.onChange}
                             data-testid="checkbox-new"
                           />
@@ -852,7 +892,7 @@ const AdminProductForm = () => {
                       <FormItem className="flex items-center space-x-2 space-y-0">
                         <FormControl>
                           <Checkbox
-                            checked={field.value}
+                            checked={!!field.value}
                             onCheckedChange={field.onChange}
                             data-testid="checkbox-popular"
                           />
@@ -880,12 +920,12 @@ const AdminProductForm = () => {
                               <FormItem className="flex items-center space-x-2 space-y-0">
                                 <FormControl>
                                   <Checkbox
-                                    checked={field.value?.includes(option.id)}
+                                    checked={(field.value as string[])?.includes(option.id)}
                                     onCheckedChange={(checked) => {
-                                      const current = field.value || [];
+                                      const current = (field.value as string[]) || [];
                                       return checked
                                         ? field.onChange([...current, option.id])
-                                        : field.onChange(current.filter((value) => value !== option.id));
+                                        : field.onChange(current.filter((value: string) => value !== option.id));
                                     }}
                                     data-testid={`checkbox-dietary-${option.id}`}
                                   />

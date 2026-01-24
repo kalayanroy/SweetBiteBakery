@@ -140,11 +140,11 @@ export default function OrderTracking() {
                 <meta name="description" content="Track your order from SweetBite Bakery" />
             </Helmet>
 
-            <div className="min-h-screen bg-gray-50">
-                <div className="container mx-auto px-4 py-6 md:py-8 max-w-7xl">
+            <div className="min-h-screen bg-gradient-to-b from-neutral to-white">
+                <div className="container mx-auto px-4 py-6 md:py-24 max-w-7xl">
                     {/* Compact Header - Closer to Navbar */}
                     <div className="text-center mb-6">
-                        <h1 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                        <h1 className="font-heading text-5xl md:text-6xl font-bold text-primary mb-6">
                             Track Your Order
                         </h1>
                         <p className="text-gray-600">
@@ -263,8 +263,8 @@ export default function OrderTracking() {
                                                     <div key={step.status} className="flex flex-col items-center">
                                                         <div
                                                             className={`w-12 h-12 rounded-full flex items-center justify-center border-3 mb-2 transition-all z-10 ${step.completed
-                                                                    ? `${currentStatusConfig?.color} border-white text-white shadow-md`
-                                                                    : 'bg-white border-gray-300 text-gray-400'
+                                                                ? `${currentStatusConfig?.color} border-white text-white shadow-md`
+                                                                : 'bg-white border-gray-300 text-gray-400'
                                                                 } ${step.active ? 'ring-3 ring-primary/20' : ''}`}
                                                         >
                                                             <Icon className="h-5 w-5" />

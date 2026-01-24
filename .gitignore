@@ -24,3 +24,6 @@ npm-debug.log*
 # Database
 *.db
 *.sqlite
+
+# Sensitive credentials
+SUPER_ADMIN_CREDENTIALS.md

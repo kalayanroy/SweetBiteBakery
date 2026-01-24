@@ -33,7 +33,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, Eye, ChevronLeft, ChevronRight, Calendar, Package } from 'lucide-react';
+import { Search, Filter, Eye, ChevronLeft, ChevronRight, Calendar, Package, ShoppingCart, DollarSign } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -151,19 +151,60 @@ export default function AdminOrders() {
     setCurrentPage(1);
   };
 
+  // Calculate statistics based on filtered orders
+  const totalSales = filteredOrders.reduce((sum, order) => sum + (order.total || 0), 0);
+  const orderCount = filteredOrders.length;
+
   return (
     <AdminLayout>
       <div className="p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-heading font-bold text-gray-900">Orders</h1>
-            <p className="text-gray-500">Manage and track all customer orders</p>
-          </div>
-          <div className="mt-4 md:mt-0">
-            <div className="text-sm text-gray-600">
-              Total Orders: <span className="font-bold text-primary">{filteredOrders.length}</span>
-            </div>
-          </div>
+        <div className="mb-6">
+          <h1 className="text-3xl font-heading font-bold text-gray-900">Orders</h1>
+          <p className="text-gray-500">Manage and track all customer orders</p>
+        </div>
+
+        {/* Statistics Cards - Compact Design */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          {/* Total Orders Card */}
+          <Card className="border-l-4 border-l-primary">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Orders</p>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <h3 className="text-2xl font-bold text-gray-900">{orderCount}</h3>
+                    <span className="text-xs text-gray-400">
+                      {statusFilter !== 'all' && statusFilter}
+                      {dateFilter !== 'all' && ` • ${dateFilter === 'today' ? 'today' : dateFilter === 'week' ? '7d' : dateFilter === 'month' ? '30d' : '1y'}`}
+                    </span>
+                  </div>
+                </div>
+                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <ShoppingCart className="h-6 w-6 text-primary" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Total Sales Card */}
+          <Card className="border-l-4 border-l-green-500">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Sales</p>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <h3 className="text-2xl font-bold text-gray-900">{formatCurrency(totalSales)}</h3>
+                    {orderCount > 0 && (
+                      <span className="text-xs text-gray-400">avg: {formatCurrency(totalSales / orderCount)}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="h-12 w-12 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                  <DollarSign className="h-6 w-6 text-green-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Filters and search */}

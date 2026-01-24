@@ -1,6 +1,6 @@
 import { IStorage } from "../storage";
-import { 
-  InsertCategory, 
+import {
+  InsertCategory,
   InsertProduct,
   InsertUser
 } from "@shared/schema";
@@ -17,6 +17,7 @@ export async function loadInitialData(storage: IStorage): Promise<void> {
   const adminPassword = await hashPassword("admin123");
   const adminUser: InsertUser = {
     username: "admin",
+    email: "admin@sweetbite.com",
     password: adminPassword,
     isAdmin: true
   };

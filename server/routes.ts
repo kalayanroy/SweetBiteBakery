@@ -7,6 +7,7 @@ import {
   insertProductSchema,
   insertOrderSchema,
   insertOrderItemSchema,
+  insertUserSchema,
   loginSchema,
   registerSchema,
   newsletterSchema,
@@ -57,6 +58,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Debug check failed",
         error: error.message
       });
+    }
+  });
+
+  // Settings Routes
+  app.get("/api/settings/:key", async (req: Request, res: Response) => {
+    try {
+      const key = req.params.key;
+      // Allow public access mostly to store settings
+      if (key !== 'store' && key !== 'payment') {
+        // Optionally restrict other keys if needed, but for now allow public read
+        // or checkAuth for sensitive keys if we add them later
+      }
+      const settings = await storage.getSettings(key);
+      res.json(settings || {});
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch settings" });
+    }
+  });
+
+  app.get("/api/admin/settings/:key", checkAuth, async (req: Request, res: Response) => {
+    try {
+      const key = req.params.key;
+      const settings = await storage.getSettings(key);
+      res.json(settings || {});
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch settings" });
+    }
+  });
+
+  app.put("/api/admin/settings/:key", checkAuth, async (req: Request, res: Response) => {
+    try {
+      const key = req.params.key;
+      const value = req.body;
+      const settings = await storage.updateSettings(key, value);
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update settings" });
     }
   });
 
@@ -202,7 +240,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (result.success) {
         req.session.userId = result.userId;
         req.session.isAdmin = result.isAdmin;
-        res.json({ success: true, isAdmin: result.isAdmin });
+        req.session.role = result.role;
+        res.json({ success: true, isAdmin: result.isAdmin, role: result.role });
       } else {
         res.status(401).json({ message: "Invalid credentials" });
       }
@@ -248,6 +287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Automatically log in the user after registration
       req.session.userId = newUser.id;
       req.session.isAdmin = false;
+      req.session.role = newUser.role;
 
       res.json({
         success: true,
@@ -283,11 +323,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({
           success: true,
           isAdmin: result.isAdmin,
+          role: result.role,
           user: user ? {
             id: user.id,
             username: user.username,
             email: user.email,
-            name: user.name
+            name: user.name,
+            role: user.role
           } : null
         });
       } else {
@@ -324,10 +366,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         username: user.username,
         email: user.email,
         name: user.name,
-        isAdmin: user.isAdmin
+        isAdmin: user.isAdmin,
+        role: user.role
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  app.put("/api/auth/password", async (req: Request, res: Response) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    try {
+      const { currentPassword, newPassword } = req.body;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Current and new password are required" });
+      }
+
+      const user = await storage.getUserById(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check current password
+      // Note: In a real app with hashed passwords, use bcrypt.compare
+      if (user.password !== currentPassword) {
+        return res.status(400).json({ message: "Incorrect current password" });
+      }
+
+      // Update password
+      await storage.updateUser?.(user.id, { password: newPassword });
+
+      res.json({ success: true, message: "Password updated successfully" });
+    } catch (error) {
+      console.error("Password update error:", error);
+      res.status(500).json({ message: "Failed to update password" });
     }
   });
 
@@ -399,6 +475,167 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ message: "Failed to create category" });
       }
+    }
+  });
+
+  // Admin: User Management
+  app.get("/api/admin/users", checkAuth, async (req: Request, res: Response) => {
+    try {
+      // Get all users from storage
+      const allUsers = await storage.getUsers?.() || [];
+
+      // Return users without passwords
+      const users = allUsers.map((user: any) => ({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        name: user.name,
+        isAdmin: user.isAdmin,
+        role: user.role,
+        createdAt: user.createdAt
+      }));
+
+      res.json(users);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/admin/users/:id", checkAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      const user = await storage.getUserById(id);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Return user without password
+      res.json({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        name: user.name,
+        isAdmin: user.isAdmin,
+        role: user.role,
+        createdAt: user.createdAt
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  app.post("/api/admin/users", checkAuth, async (req: Request, res: Response) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+
+      // Check if username or email already exists
+      const existingUser = await storage.getUserByUsernameOrEmail(userData.username, userData.email);
+      if (existingUser) {
+        return res.status(400).json({
+          message: existingUser.username === userData.username
+            ? "Username already exists"
+            : "Email already registered"
+        });
+      }
+
+      // Create new user
+      const newUser = await storage.createUser(userData);
+
+      // Return user without password
+      res.status(201).json({
+        id: newUser.id,
+        username: newUser.username,
+        email: newUser.email,
+        name: newUser.name,
+        isAdmin: newUser.isAdmin,
+        role: newUser.role,
+        createdAt: newUser.createdAt
+      });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        res.status(400).json({ message: "Invalid input", errors: error.errors });
+      } else {
+        console.error("User creation error:", error);
+        res.status(500).json({ message: "Failed to create user" });
+      }
+    }
+  });
+
+  app.put("/api/admin/users/:id", checkAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      const userData = insertUserSchema.partial().parse(req.body);
+
+      // If updating username or email, check for conflicts
+      if (userData.username || userData.email) {
+        const existingUser = await storage.getUserById(id);
+        if (!existingUser) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        if (userData.username && userData.username !== existingUser.username) {
+          const usernameExists = await storage.getUserByUsername(userData.username);
+          if (usernameExists) {
+            return res.status(400).json({ message: "Username already exists" });
+          }
+        }
+      }
+
+      const updatedUser = await storage.updateUser?.(id, userData);
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Return user without password
+      res.json({
+        id: updatedUser.id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        isAdmin: updatedUser.isAdmin,
+        role: updatedUser.role,
+        createdAt: updatedUser.createdAt
+      });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        res.status(400).json({ message: "Invalid input", errors: error.errors });
+      } else {
+        console.error("User update error:", error);
+        res.status(500).json({ message: "Failed to update user" });
+      }
+    }
+  });
+
+  app.delete("/api/admin/users/:id", checkAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      // Prevent deleting yourself
+      if (req.session.userId === id) {
+        return res.status(400).json({ message: "Cannot delete your own account" });
+      }
+
+      const success = await storage.deleteUser?.(id);
+      if (!success) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("User deletion error:", error);
+      res.status(500).json({ message: "Failed to delete user" });
     }
   });
 

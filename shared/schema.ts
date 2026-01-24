@@ -69,6 +69,7 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   name: text("name"),
   isAdmin: boolean("is_admin").default(false),
+  role: text("role").default("customer").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -78,6 +79,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
   name: true,
   isAdmin: true,
+  role: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -136,6 +138,22 @@ export const insertOrderItemSchema = createInsertSchema(orderItems).pick({
 
 export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
 export type OrderItem = typeof orderItems.$inferSelect;
+
+// Settings schema
+export const settings = pgTable("settings", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(), // e.g., 'store_settings', 'payment_settings'
+  value: jsonb("value").default({}),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertSettingsSchema = createInsertSchema(settings).pick({
+  key: true,
+  value: true,
+});
+
+export type InsertSettings = z.infer<typeof insertSettingsSchema>;
+export type Setting = typeof settings.$inferSelect;
 
 // Cart item (for session-based carts)
 export const cartSchema = z.object({

@@ -32,6 +32,19 @@ const ProductDetails = () => {
     enabled: !!slug,
   });
 
+  const { data: storeSettings } = useQuery({
+    queryKey: ['/api/settings/store'],
+    queryFn: async () => {
+      const res = await fetch('/api/settings/store');
+      if (!res.ok) return {};
+      return res.json();
+    }
+  });
+
+  const freeDeliveryThreshold = storeSettings?.freeDeliveryThreshold && !isNaN(Number(storeSettings.freeDeliveryThreshold))
+    ? Number(storeSettings.freeDeliveryThreshold)
+    : 1000;
+
   const allImages = product ? [
     product.image,
     ...(Array.isArray(product.images) ? product.images : [])
@@ -39,11 +52,19 @@ const ProductDetails = () => {
 
   const getCurrentPrice = (): number => {
     if (!product) return 0;
-    if (selectedSize && selectedColor && product.priceVariations) {
+    const variations = product.priceVariations as Record<string, number> || {};
+
+    // 1. Check for specific Size + Color combination first (most specific)
+    if (selectedSize && selectedColor) {
       const key = `${selectedSize}-${selectedColor}`;
-      const variations = product.priceVariations as Record<string, number>;
       if (variations[key]) return variations[key];
     }
+
+    // 2. Check for Size only pricing
+    if (selectedSize && variations[selectedSize]) {
+      return variations[selectedSize];
+    }
+
     return product.price;
   };
 
@@ -339,11 +360,11 @@ const ProductDetails = () => {
                       {formatCurrency(currentPrice)}
                     </span>
                   </div>
-                  {selectedSize && selectedColor && (
+                  {(selectedSize || selectedColor) && (
                     <div className="text-right">
                       <p className="text-xs text-gray-500">Selected</p>
                       <p className="text-sm font-semibold text-[hsl(var(--chocolate))] dark:text-white">
-                        {selectedSize} • {selectedColor}
+                        {[selectedSize, selectedColor].filter(Boolean).join(" • ")}
                       </p>
                     </div>
                   )}
@@ -439,7 +460,7 @@ const ProductDetails = () => {
 
                 <p className="text-center text-xs text-gray-600 dark:text-gray-400 mt-3 flex items-center justify-center gap-1">
                   <Sparkles className="w-3 h-3 text-[hsl(var(--honey))]" />
-                  Free delivery on orders over BDT 1000
+                  Free delivery on orders over BDT {freeDeliveryThreshold}
                 </p>
               </div>
 

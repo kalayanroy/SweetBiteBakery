@@ -1,15 +1,7 @@
-import { Playfair_Display, Nunito } from "next/font/google";
+// Fonts are loaded via CSS in index.css using Google Fonts
+// This file is kept for potential future font configuration
 
-export const playfairDisplay = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  display: "swap",
-  weight: ["400", "600", "700"]
-});
-
-export const nunito = Nunito({
-  subsets: ["latin"],
-  variable: "--font-nunito",
-  display: "swap",
-  weight: ["400", "600", "700"]
-});
+export const fontConfig = {
+  heading: 'Playfair Display',
+  body: 'Nunito'
+};

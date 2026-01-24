@@ -4,21 +4,23 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import { User, Package, LogOut, Mail, Calendar } from "lucide-react";
+import { User as UserIcon, Package, LogOut, Mail, Calendar } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { format } from "date-fns";
+
+import { User, Order } from "@shared/schema";
 
 export default function UserPanel() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
   // Get current user info
-  const { data: user, isLoading: userLoading } = useQuery({
+  const { data: user, isLoading: userLoading } = useQuery<User>({
     queryKey: ["/api/auth/me"],
   });
 
   // Get user's orders
-  const { data: orders, isLoading: ordersLoading } = useQuery({
+  const { data: orders, isLoading: ordersLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders/user"],
   });
 
@@ -67,7 +69,7 @@ export default function UserPanel() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
+                  <UserIcon className="h-5 w-5" />
                   Profile
                 </CardTitle>
               </div>
@@ -152,15 +154,14 @@ export default function UserPanel() {
                         <div className="text-right">
                           <p className="font-bold text-lg">{formatCurrency(order.total)}</p>
                           <span
-                            className={`inline-block px-2 py-1 text-xs rounded-full ${
-                              order.status === "delivered"
-                                ? "bg-green-100 text-green-800"
-                                : order.status === "processing"
+                            className={`inline-block px-2 py-1 text-xs rounded-full ${order.status === "delivered"
+                              ? "bg-green-100 text-green-800"
+                              : order.status === "processing"
                                 ? "bg-blue-100 text-blue-800"
                                 : order.status === "pending"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-gray-100 text-gray-800"
-                            }`}
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-gray-100 text-gray-800"
+                              }`}
                           >
                             {order.status}
                           </span>

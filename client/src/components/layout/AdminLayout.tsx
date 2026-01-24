@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
-import { 
-  LayoutDashboard, Package, ShoppingCart, 
+import {
+  LayoutDashboard, Package, ShoppingCart,
   Users, Settings, LogOut, Menu, X, ChevronDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [location] = useLocation();
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  
+
   const handleLogout = async () => {
     try {
       await apiRequest('POST', '/api/admin/logout', undefined);
@@ -35,6 +35,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { name: 'Products', href: '/admin/products', icon: Package },
     { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
     { name: 'Customers', href: '/admin/customers', icon: Users },
+    { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
@@ -53,7 +54,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           <div className="flex-1 overflow-y-auto pt-2">
             <nav className="flex-1 px-4 pb-4 space-y-1">
               {navigation.map((item) => (
-                <div 
+                <div
                   key={item.name}
                   className="w-full"
                 >
@@ -61,14 +62,12 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <div className={`group flex items-center py-3 px-3 rounded-md text-sm ${
-                      location === item.href 
-                      ? 'bg-primary/10 text-primary font-medium' 
-                      : 'text-gray-700 hover:bg-gray-100'
-                    }`}>
-                      <item.icon className={`mr-3 h-5 w-5 ${
-                        location === item.href ? 'text-primary' : 'text-gray-500'
-                      }`} />
+                    <div className={`group flex items-center py-3 px-3 rounded-md text-sm ${location === item.href
+                        ? 'bg-primary/10 text-primary font-medium'
+                        : 'text-gray-700 hover:bg-gray-100'
+                      }`}>
+                      <item.icon className={`mr-3 h-5 w-5 ${location === item.href ? 'text-primary' : 'text-gray-500'
+                        }`} />
                       {item.name}
                     </div>
                   </Link>
@@ -103,14 +102,12 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                     className="w-full"
                   >
                     <Link href={item.href}>
-                      <div className={`group flex items-center py-3 px-3 rounded-md text-sm ${
-                        location === item.href 
-                        ? 'bg-primary/10 text-primary font-medium' 
-                        : 'text-gray-700 hover:bg-gray-100'
-                      }`}>
-                        <item.icon className={`mr-3 h-5 w-5 ${
-                          location === item.href ? 'text-primary' : 'text-gray-500'
-                        }`} />
+                      <div className={`group flex items-center py-3 px-3 rounded-md text-sm ${location === item.href
+                          ? 'bg-primary/10 text-primary font-medium'
+                          : 'text-gray-700 hover:bg-gray-100'
+                        }`}>
+                        <item.icon className={`mr-3 h-5 w-5 ${location === item.href ? 'text-primary' : 'text-gray-500'
+                          }`} />
                         {item.name}
                       </div>
                     </Link>
@@ -118,7 +115,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 ))}
               </nav>
             </div>
-            
+
             <div className="border-t border-gray-200 p-4">
               <button
                 className="flex items-center w-full py-2 px-3 text-sm text-red-600 hover:bg-red-50 rounded-md"

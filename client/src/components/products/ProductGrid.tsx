@@ -34,7 +34,7 @@ const ProductGrid = ({ products, isLoading, error, fetchNextPage, hasNextPage, i
       case 'price-high':
         return b.price - a.price;
       case 'newest':
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
       case 'bestselling':
         if (a.isBestseller === b.isBestseller) return 0;
         return a.isBestseller ? -1 : 1;

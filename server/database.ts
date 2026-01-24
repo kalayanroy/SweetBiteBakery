@@ -4,14 +4,16 @@ import {
   type Product, type InsertProduct,
   type User, type InsertUser,
   type Order, type InsertOrder,
-  type OrderItem, type InsertOrderItem
+  type OrderItem, type InsertOrderItem,
+  type Setting, settings
 } from "../shared/schema.js";
-import { db } from "./db.js";
+import { getDb as getDbInstance } from "./db.js";
 import { eq, desc, and, asc } from "drizzle-orm";
 import { IStorage } from "./storage.js";
 
 // Helper function to ensure db is not null
 function getDb() {
+  const db = getDbInstance();
   if (!db) {
     throw new Error("Database not initialized. Please set DATABASE_URL environment variable.");
   }
@@ -152,7 +154,7 @@ export class DatabaseStorage implements IStorage {
     // If exact match not found, check for either username OR email
     if (!user) {
       const results = await getDb().select().from(users);
-      return results.find(u => u.username === username || u.email === email);
+      return results.find((u: User) => u.username === username || u.email === email);
     }
     return user;
   }
@@ -166,6 +168,24 @@ export class DatabaseStorage implements IStorage {
 
     const [user] = await getDb().insert(users).values(userWithDefaults).returning();
     return user;
+  }
+
+  async getUsers(): Promise<User[]> {
+    return await getDb().select().from(users).orderBy(asc(users.createdAt));
+  }
+
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User | undefined> {
+    const [updatedUser] = await getDb()
+      .update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    const result = await getDb().delete(users).where(eq(users.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
   }
 
   // Order operations
@@ -206,5 +226,30 @@ export class DatabaseStorage implements IStorage {
   async createOrderItem(orderItem: InsertOrderItem): Promise<OrderItem> {
     const [newOrderItem] = await getDb().insert(orderItems).values(orderItem).returning();
     return newOrderItem;
+  }
+
+  // Settings operations
+  async getSettings(key: string): Promise<any> {
+    const [setting] = await getDb().select().from(settings).where(eq(settings.key, key));
+    return setting ? setting.value : undefined;
+  }
+
+  async updateSettings(key: string, value: any): Promise<Setting> {
+    const [existingSetting] = await getDb().select().from(settings).where(eq(settings.key, key));
+
+    if (existingSetting) {
+      const [updatedSetting] = await getDb()
+        .update(settings)
+        .set({ value, updatedAt: new Date() })
+        .where(eq(settings.key, key))
+        .returning();
+      return updatedSetting;
+    } else {
+      const [newSetting] = await getDb()
+        .insert(settings)
+        .values({ key, value })
+        .returning();
+      return newSetting;
+    }
   }
 }

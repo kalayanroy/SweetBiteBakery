@@ -21,6 +21,7 @@ import AdminProducts from "@/pages/AdminProducts";
 import AdminProductForm from "@/pages/AdminProductForm";
 import AdminOrders from "@/pages/AdminOrders";
 import AdminCustomers from "@/pages/AdminCustomers";
+import AdminUsers from "@/pages/AdminUsers";
 import AdminSettings from "@/pages/AdminSettings";
 import Register from "@/pages/Register";
 import Login from "@/pages/Login";
@@ -55,6 +56,7 @@ function Router() {
       <Route path="/admin/products/edit/:id" component={AdminProductForm} />
       <Route path="/admin/orders" component={AdminOrders} />
       <Route path="/admin/customers" component={AdminCustomers} />
+      <Route path="/admin/users" component={AdminUsers} />
       <Route path="/admin/settings" component={AdminSettings} />
 
       {/* Fallback to 404 */}

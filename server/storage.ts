@@ -3,7 +3,8 @@ import {
   type Product, type InsertProduct,
   type User, type InsertUser,
   type Order, type InsertOrder,
-  type OrderItem, type InsertOrderItem
+  type OrderItem, type InsertOrderItem,
+  type Setting, type InsertSettings
 } from "../shared/schema.js";
 import { randomUUID } from "crypto";
 
@@ -32,7 +33,10 @@ export interface IStorage {
   getUserById(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByUsernameOrEmail(username: string, email: string): Promise<User | undefined>;
+  getUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
 
   // Order operations
   getOrders(): Promise<Order[]>;
@@ -43,6 +47,10 @@ export interface IStorage {
   // Order Item operations
   getOrderItems(orderId: number): Promise<OrderItem[]>;
   createOrderItem(orderItem: InsertOrderItem): Promise<OrderItem>;
+
+  // Settings operations
+  getSettings(key: string): Promise<any>;
+  updateSettings(key: string, value: any): Promise<Setting>;
 }
 
 export class MemStorage implements IStorage {
@@ -51,12 +59,14 @@ export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private orders: Map<number, Order>;
   private orderItems: Map<number, OrderItem>;
+  private settings: Map<number, Setting>;
 
   private categoryId: number;
   private productId: number;
   private userId: number;
   private orderId: number;
   private orderItemId: number;
+  private settingId: number;
 
   constructor() {
     this.categories = new Map();
@@ -64,12 +74,14 @@ export class MemStorage implements IStorage {
     this.users = new Map();
     this.orders = new Map();
     this.orderItems = new Map();
+    this.settings = new Map();
 
     this.categoryId = 1;
     this.productId = 1;
     this.userId = 1;
     this.orderId = 1;
     this.orderItemId = 1;
+    this.settingId = 1;
   }
 
   // Category methods
@@ -185,6 +197,8 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
+    console.log('Trying to find user by username:', username);
+    console.log('Users in storage:', Array.from(this.users.values()));
     return Array.from(this.users.values()).find(
       user => user.username === username
     );
@@ -202,6 +216,23 @@ export class MemStorage implements IStorage {
     const user = { ...insertUser, id, createdAt: now } as User;
     this.users.set(id, user);
     return user;
+  }
+
+  async getUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User | undefined> {
+    const existingUser = this.users.get(id);
+    if (!existingUser) return undefined;
+
+    const updatedUser = { ...existingUser, ...userData };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    return this.users.delete(id);
   }
 
   // Order methods
@@ -243,12 +274,64 @@ export class MemStorage implements IStorage {
     this.orderItems.set(id, newOrderItem);
     return newOrderItem;
   }
+
+  // Settings methods
+  async getSettings(key: string): Promise<any> {
+    const setting = Array.from(this.settings.values()).find(s => s.key === key);
+    return setting ? setting.value : undefined;
+  }
+
+  async updateSettings(key: string, value: any): Promise<Setting> {
+    const existingSetting = Array.from(this.settings.values()).find(s => s.key === key);
+
+    if (existingSetting) {
+      const updatedSetting = { ...existingSetting, value, updatedAt: new Date() };
+      this.settings.set(existingSetting.id, updatedSetting);
+      return updatedSetting;
+    }
+
+    const id = this.settingId++;
+    const newSetting: Setting = {
+      id,
+      key,
+      value: value || {},
+      updatedAt: new Date()
+    };
+    this.settings.set(id, newSetting);
+    return newSetting;
+  }
 }
 
 // Import the DatabaseStorage
 import { DatabaseStorage } from "./database.js";
 
-// Create and export an instance of storage (fallback to MemStorage if no DB)
-export const storage = process.env.DATABASE_URL
-  ? new DatabaseStorage()
-  : new MemStorage();
+// Lazy storage initialization - will be created on first access
+let storageInstance: IStorage | null = null;
+
+function getStorageInstance(): IStorage {
+  if (!storageInstance) {
+    const hasDatabaseUrl = !!process.env.DATABASE_URL;
+    console.log('🔍 DATABASE_URL exists:', hasDatabaseUrl);
+    console.log('🔍 Using storage type:', hasDatabaseUrl ? 'DatabaseStorage' : 'MemStorage');
+
+    storageInstance = hasDatabaseUrl
+      ? new DatabaseStorage()
+      : new MemStorage();
+  }
+  return storageInstance;
+}
+
+// Create a Proxy to make storage access lazy
+export const storage = new Proxy({} as IStorage, {
+  get(_target, prop) {
+    const instance = getStorageInstance();
+    const value = (instance as any)[prop];
+
+    // If it's a function, bind it to the instance
+    if (typeof value === 'function') {
+      return value.bind(instance);
+    }
+
+    return value;
+  }
+});
