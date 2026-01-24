@@ -10,6 +10,7 @@ echo "Applying login fix for HTTPS..."
 cd /var/www/sweetbite-bakery
 
 # Pull the latest changes (which include the fix we just pushed)
+git reset --hard HEAD
 git pull origin main
 
 # Install dependencies (important for new session store)
