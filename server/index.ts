@@ -8,6 +8,9 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
+// Trust Nginx proxy for secure cookies
+app.set('trust proxy', 1);
+
 // Add session middleware for user authentication
 app.use(session({
   secret: 'sweetbite-bakery-secret',
@@ -15,6 +18,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'lax' : 'lax', // Use lax for both dev and prod
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
