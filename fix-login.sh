@@ -21,6 +21,10 @@ npm install
 echo "Checking Production Database Connection..."
 npx tsx server/check-db-prod.ts
 
+# Run Migration (Fix missing columns)
+echo "Running Database Migration..."
+npx tsx server/migrate-db.ts
+
 # Ensure database users exist (including 'kalayan')
 echo "Seeding database users..."
 npx tsx server/createDbUsers.ts
