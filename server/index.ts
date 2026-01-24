@@ -3,6 +3,10 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import session from "express-session";
+import dns from "node:dns";
+
+// Force IPv4 to prevent connection timeouts with Neon DB on some VPS networks
+dns.setDefaultResultOrder('ipv4first');
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));

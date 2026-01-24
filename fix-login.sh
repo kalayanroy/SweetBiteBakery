@@ -16,6 +16,10 @@ git pull origin main
 echo "Installing dependencies..."
 npm install
 
+# Check Database Connection (Prod)
+echo "Checking Production Database Connection..."
+npx tsx server/check-db-prod.ts
+
 # Ensure database users exist (including 'kalayan')
 echo "Seeding database users..."
 npx tsx server/createDbUsers.ts
