@@ -27,6 +27,9 @@ function initializeDatabase() {
     max: 10,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000,
+    // Add Keep-Alive settings to prevent connection drops
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10000,
     // For local PostgreSQL, disable SSL
     ssl: DATABASE_URL.includes('localhost') || DATABASE_URL.includes('127.0.0.1') ? false : { rejectUnauthorized: false }
   });
