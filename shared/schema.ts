@@ -218,6 +218,73 @@ export type ProductWithCategory = Product & {
   category: Category;
 };
 
+// Supplier schema
+export const suppliers = pgTable("suppliers", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  contactName: text("contact_name"),
+  email: text("email"),
+  phone: text("phone"),
+  address: text("address"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSupplierSchema = createInsertSchema(suppliers).pick({
+  name: true,
+  contactName: true,
+  email: true,
+  phone: true,
+  address: true,
+});
+
+export type InsertSupplier = z.infer<typeof insertSupplierSchema>;
+export type Supplier = typeof suppliers.$inferSelect;
+
+// Purchase schema
+export const purchases = pgTable("purchases", {
+  id: serial("id").primaryKey(),
+  supplierId: integer("supplier_id").notNull(),
+  invoiceNumber: text("invoice_number").notNull(),
+  date: timestamp("date").notNull().defaultNow(),
+  totalAmount: doublePrecision("total_amount").notNull(),
+  status: text("status").notNull().default("pending"), // pending, received
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPurchaseSchema = createInsertSchema(purchases).pick({
+  supplierId: true,
+  invoiceNumber: true,
+  date: true,
+  totalAmount: true,
+  status: true,
+  notes: true,
+});
+
+export type InsertPurchase = z.infer<typeof insertPurchaseSchema>;
+export type Purchase = typeof purchases.$inferSelect;
+
+// Purchase Items schema
+export const purchaseItems = pgTable("purchase_items", {
+  id: serial("id").primaryKey(),
+  purchaseId: integer("purchase_id").notNull(),
+  productId: integer("product_id").notNull(),
+  quantity: integer("quantity").notNull(),
+  unitCost: doublePrecision("unit_cost").notNull(),
+  subtotal: doublePrecision("subtotal").notNull(),
+});
+
+export const insertPurchaseItemSchema = createInsertSchema(purchaseItems).pick({
+  purchaseId: true,
+  productId: true,
+  quantity: true,
+  unitCost: true,
+  subtotal: true,
+});
+
+export type InsertPurchaseItem = z.infer<typeof insertPurchaseItemSchema>;
+export type PurchaseItem = typeof purchaseItems.$inferSelect;
+
 // Session schema (required for connect-pg-simple to coexist with Drizzle)
 export const session = pgTable("session", {
   sid: text("sid").primaryKey(),

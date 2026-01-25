@@ -5,7 +5,10 @@ import {
   type User, type InsertUser,
   type Order, type InsertOrder,
   type OrderItem, type InsertOrderItem,
-  type Setting, settings
+  type Setting, settings,
+  suppliers, type Supplier, type InsertSupplier,
+  purchases, type Purchase, type InsertPurchase,
+  purchaseItems, type PurchaseItem, type InsertPurchaseItem
 } from "../shared/schema.js";
 import { getDb as getDbInstance } from "./db.js";
 import { eq, desc, and, asc, sql } from "drizzle-orm";
@@ -306,8 +309,105 @@ export class DatabaseStorage implements IStorage {
         }));
         await tx.insert(orderItems).values(itemsWithOrderId);
       }
-
       return newOrder;
+    });
+  }
+
+  // Supplier operations
+  async getSuppliers(): Promise<Supplier[]> {
+    return await getDb().select().from(suppliers).orderBy(desc(suppliers.createdAt));
+  }
+
+  async getSupplierById(id: number): Promise<Supplier | undefined> {
+    const [supplier] = await getDb().select().from(suppliers).where(eq(suppliers.id, id));
+    return supplier;
+  }
+
+  async createSupplier(supplier: InsertSupplier): Promise<Supplier> {
+    const [newSupplier] = await getDb().insert(suppliers).values(supplier).returning();
+    return newSupplier;
+  }
+
+  async updateSupplier(id: number, supplier: Partial<InsertSupplier>): Promise<Supplier | undefined> {
+    const [updatedSupplier] = await getDb()
+      .update(suppliers)
+      .set(supplier)
+      .where(eq(suppliers.id, id))
+      .returning();
+    return updatedSupplier;
+  }
+
+  async deleteSupplier(id: number): Promise<boolean> {
+    const result = await getDb().delete(suppliers).where(eq(suppliers.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  // Purchase operations
+  async getPurchases(): Promise<Purchase[]> {
+    return await getDb().select().from(purchases).orderBy(desc(purchases.createdAt));
+  }
+
+  async getPurchaseById(id: number): Promise<Purchase | undefined> {
+    const [purchase] = await getDb().select().from(purchases).where(eq(purchases.id, id));
+    return purchase;
+  }
+
+  async createPurchase(purchase: InsertPurchase): Promise<Purchase> {
+    // Ensure status and date are set correctly
+    const purchaseWithDefaults = {
+      ...purchase,
+      status: purchase.status || 'pending',
+      date: new Date(purchase.date)
+    };
+
+    const [newPurchase] = await getDb().insert(purchases).values(purchaseWithDefaults).returning();
+    return newPurchase;
+  }
+
+  async updatePurchaseStatus(id: number, status: string): Promise<Purchase | undefined> {
+    const [updatedPurchase] = await getDb()
+      .update(purchases)
+      .set({ status })
+      .where(eq(purchases.id, id))
+      .returning();
+    return updatedPurchase;
+  }
+
+  async getPurchaseItems(purchaseId: number): Promise<PurchaseItem[]> {
+    return await getDb().select().from(purchaseItems).where(eq(purchaseItems.purchaseId, purchaseId));
+  }
+
+  async processPurchase(purchase: InsertPurchase, items: InsertPurchaseItem[]): Promise<Purchase> {
+    return await getDb().transaction(async (tx) => {
+      // 1. Create purchase
+      const purchaseWithDefaults = {
+        ...purchase,
+        status: purchase.status || 'pending',
+        date: new Date(purchase.date)
+      };
+
+      const [newPurchase] = await tx.insert(purchases).values(purchaseWithDefaults).returning();
+
+      // 2. Create purchase items
+      if (items.length > 0) {
+        const itemsWithPurchaseId = items.map(item => ({
+          ...item,
+          purchaseId: newPurchase.id
+        }));
+        await tx.insert(purchaseItems).values(itemsWithPurchaseId);
+
+        // 3. Update stock if status is 'received'
+        if (newPurchase.status === 'received') {
+          for (const item of items) {
+            await tx
+              .update(products)
+              .set({ stock: sql`${products.stock} + ${item.quantity}` })
+              .where(eq(products.id, item.productId));
+          }
+        }
+      }
+
+      return newPurchase;
     });
   }
 }

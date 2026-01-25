@@ -4,7 +4,10 @@ import {
   type User, type InsertUser,
   type Order, type InsertOrder,
   type OrderItem, type InsertOrderItem,
-  type Setting, type InsertSettings
+  type Setting, type InsertSettings,
+  type Supplier, type InsertSupplier,
+  type Purchase, type InsertPurchase,
+  type PurchaseItem, type InsertPurchaseItem
 } from "../shared/schema.js";
 import { randomUUID } from "crypto";
 
@@ -50,6 +53,21 @@ export interface IStorage {
   createOrderItems(orderItems: InsertOrderItem[]): Promise<OrderItem[]>;
   processOrder(order: InsertOrder, items: InsertOrderItem[]): Promise<Order>;
 
+  // Supplier operations
+  getSuppliers(): Promise<Supplier[]>;
+  getSupplierById(id: number): Promise<Supplier | undefined>;
+  createSupplier(supplier: InsertSupplier): Promise<Supplier>;
+  updateSupplier(id: number, supplier: Partial<InsertSupplier>): Promise<Supplier | undefined>;
+  deleteSupplier(id: number): Promise<boolean>;
+
+  // Purchase operations
+  getPurchases(): Promise<Purchase[]>;
+  getPurchaseById(id: number): Promise<Purchase | undefined>;
+  createPurchase(purchase: InsertPurchase): Promise<Purchase>;
+  updatePurchaseStatus(id: number, status: string): Promise<Purchase | undefined>;
+  getPurchaseItems(purchaseId: number): Promise<PurchaseItem[]>;
+  processPurchase(purchase: InsertPurchase, items: InsertPurchaseItem[]): Promise<Purchase>;
+
   // Settings operations
   getSettings(key: string): Promise<any>;
   updateSettings(key: string, value: any): Promise<Setting>;
@@ -62,6 +80,9 @@ export class MemStorage implements IStorage {
   private orders: Map<number, Order>;
   private orderItems: Map<number, OrderItem>;
   private settings: Map<number, Setting>;
+  private suppliers: Map<number, Supplier>;
+  private purchases: Map<number, Purchase>;
+  private purchaseItems: Map<number, PurchaseItem>;
 
   private categoryId: number;
   private productId: number;
@@ -69,6 +90,9 @@ export class MemStorage implements IStorage {
   private orderId: number;
   private orderItemId: number;
   private settingId: number;
+  private supplierId: number;
+  private purchaseId: number;
+  private purchaseItemId: number;
 
   constructor() {
     this.categories = new Map();
@@ -77,6 +101,9 @@ export class MemStorage implements IStorage {
     this.orders = new Map();
     this.orderItems = new Map();
     this.settings = new Map();
+    this.suppliers = new Map();
+    this.purchases = new Map();
+    this.purchaseItems = new Map();
 
     this.categoryId = 1;
     this.productId = 1;
@@ -84,6 +111,9 @@ export class MemStorage implements IStorage {
     this.orderId = 1;
     this.orderItemId = 1;
     this.settingId = 1;
+    this.supplierId = 1;
+    this.purchaseId = 1;
+    this.purchaseItemId = 1;
   }
 
   // Category methods
@@ -306,6 +336,91 @@ export class MemStorage implements IStorage {
     await this.createOrderItems(itemsWithOrderId);
 
     return newOrder;
+  }
+
+  // Supplier methods
+  async getSuppliers(): Promise<Supplier[]> {
+    return Array.from(this.suppliers.values());
+  }
+
+  async getSupplierById(id: number): Promise<Supplier | undefined> {
+    return this.suppliers.get(id);
+  }
+
+  async createSupplier(supplier: InsertSupplier): Promise<Supplier> {
+    const id = this.supplierId++;
+    const now = new Date();
+    const newSupplier: Supplier = { ...supplier, id, createdAt: now };
+    this.suppliers.set(id, newSupplier);
+    return newSupplier;
+  }
+
+  async updateSupplier(id: number, supplier: Partial<InsertSupplier>): Promise<Supplier | undefined> {
+    const existing = this.suppliers.get(id);
+    if (!existing) return undefined;
+    const updated = { ...existing, ...supplier };
+    this.suppliers.set(id, updated);
+    return updated;
+  }
+
+  async deleteSupplier(id: number): Promise<boolean> {
+    return this.suppliers.delete(id);
+  }
+
+  // Purchase methods
+  async getPurchases(): Promise<Purchase[]> {
+    return Array.from(this.purchases.values());
+  }
+
+  async getPurchaseById(id: number): Promise<Purchase | undefined> {
+    return this.purchases.get(id);
+  }
+
+  async createPurchase(purchase: InsertPurchase): Promise<Purchase> {
+    const id = this.purchaseId++;
+    const now = new Date();
+    const newPurchase: Purchase = {
+      ...purchase,
+      id,
+      createdAt: now,
+      status: purchase.status || "pending",
+      notes: purchase.notes || null,
+      date: new Date(purchase.date)
+    };
+    this.purchases.set(id, newPurchase);
+    return newPurchase;
+  }
+
+  async updatePurchaseStatus(id: number, status: string): Promise<Purchase | undefined> {
+    const purchase = this.purchases.get(id);
+    if (!purchase) return undefined;
+    const updated = { ...purchase, status };
+    this.purchases.set(id, updated);
+    return updated;
+  }
+
+  async getPurchaseItems(purchaseId: number): Promise<PurchaseItem[]> {
+    return Array.from(this.purchaseItems.values()).filter(item => item.purchaseId === purchaseId);
+  }
+
+  async processPurchase(purchase: InsertPurchase, items: InsertPurchaseItem[]): Promise<Purchase> {
+    const newPurchase = await this.createPurchase(purchase);
+
+    // Create items
+    for (const item of items) {
+      const id = this.purchaseItemId++;
+      const newItem: PurchaseItem = { ...item, id, purchaseId: newPurchase.id };
+      this.purchaseItems.set(id, newItem);
+
+      // Update stock
+      const product = this.products.get(item.productId);
+      if (product) {
+        const updatedProduct = { ...product, stock: product.stock + item.quantity };
+        this.products.set(product.id, updatedProduct);
+      }
+    }
+
+    return newPurchase;
   }
 
   // Settings methods

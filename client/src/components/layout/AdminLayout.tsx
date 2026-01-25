@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import {
   LayoutDashboard, Package, ShoppingCart, Calculator,
-  Users, Settings, LogOut, Menu, X, ChevronDown
+  Users, Settings, LogOut, Menu, X, ChevronDown, FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +37,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     { name: 'Inventory', href: '/admin/inventory', icon: Package },
     { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
     { name: 'Customers', href: '/admin/customers', icon: Users },
+    { name: 'Suppliers', href: '/admin/suppliers', icon: Users },
+    { name: 'Purchase Invoice', href: '/admin/purchases', icon: FileText },
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];

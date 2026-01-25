@@ -11,7 +11,10 @@ import {
   loginSchema,
   registerSchema,
   newsletterSchema,
-  contactFormSchema
+  contactFormSchema,
+  insertSupplierSchema,
+  insertPurchaseSchema,
+  insertPurchaseItemSchema
 } from "../shared/schema.js";
 import { checkAuth, authenticateUser } from "./auth.js";
 import { loadInitialData } from "./loadInitialData.js";
@@ -407,6 +410,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Password update error:", error);
       res.status(500).json({ message: "Failed to update password" });
+    }
+  });
+
+
+
+  // Supplier Routes
+  app.get("/api/admin/suppliers", checkAuth, async (_req: Request, res: Response) => {
+    try {
+      const suppliers = await storage.getSuppliers();
+      res.json(suppliers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch suppliers" });
+    }
+  });
+
+  app.post("/api/admin/suppliers", checkAuth, async (req: Request, res: Response) => {
+    try {
+      const supplierData = insertSupplierSchema.parse(req.body);
+      const supplier = await storage.createSupplier(supplierData);
+      res.status(201).json(supplier);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        res.status(400).json({ message: "Invalid input", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create supplier" });
+      }
+    }
+  });
+
+  app.put("/api/admin/suppliers/:id", checkAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ message: "Invalid ID" });
+
+      const supplierData = insertSupplierSchema.partial().parse(req.body);
+      const supplier = await storage.updateSupplier(id, supplierData);
+      if (!supplier) return res.status(404).json({ message: "Supplier not found" });
+
+      res.json(supplier);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update supplier" });
+    }
+  });
+
+  app.delete("/api/admin/suppliers/:id", checkAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ message: "Invalid ID" });
+
+      const success = await storage.deleteSupplier(id);
+      if (!success) return res.status(404).json({ message: "Supplier not found" });
+
+      res.json({ message: "Supplier deleted" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete supplier" });
+    }
+  });
+
+  // Purchase Routes
+  app.get("/api/admin/purchases", checkAuth, async (_req: Request, res: Response) => {
+    try {
+      const purchases = await storage.getPurchases();
+      // Enrich with supplier names if possible, or fetch separate
+      // For simplicity, returning raw purchase first
+      res.json(purchases);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch purchases" });
+    }
+  });
+
+  app.get("/api/admin/purchases/:id", checkAuth, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) return res.status(400).json({ message: "Invalid ID" });
+
+      const purchase = await storage.getPurchaseById(id);
+      if (!purchase) return res.status(404).json({ message: "Purchase not found" });
+
+      const items = await storage.getPurchaseItems(id);
+      res.json({ ...purchase, items });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch purchase" });
+    }
+  });
+
+  app.post("/api/admin/purchases", checkAuth, async (req: Request, res: Response) => {
+    try {
+      const { items, ...purchaseData } = req.body;
+      const purchase = insertPurchaseSchema.parse(purchaseData);
+      const purchaseItems = items.map((item: any) => insertPurchaseItemSchema.parse(item));
+
+      const newPurchase = await storage.processPurchase(purchase, purchaseItems);
+      res.status(201).json(newPurchase);
+    } catch (error) {
+      console.error("Purchase creation error:", error);
+      if (error instanceof ZodError) {
+        res.status(400).json({ message: "Invalid input", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create purchase" });
+      }
     }
   });
 
