@@ -1,9 +1,10 @@
 module.exports = {
     apps: [{
         name: 'sweetbite-bakery',
-        script: 'dist/index.js',
+        script: 'server/index.ts',
+        interpreter: 'node_modules/.bin/tsx',
         instances: 1,
-        exec_mode: 'cluster',
+        exec_mode: 'fork',
         env: {
             NODE_ENV: 'production',
             PORT: 5000
