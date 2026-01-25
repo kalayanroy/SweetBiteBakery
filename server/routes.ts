@@ -433,6 +433,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const productData = insertProductSchema.partial().parse(req.body);
+      console.log(`Updating product ${id} with:`, productData); // Debug log
       const product = await storage.updateProduct(id, productData);
 
       if (!product) {
@@ -441,6 +442,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(product);
     } catch (error) {
+      console.error("Product Update Error:", error); // Debug log
       if (error instanceof ZodError) {
         res.status(400).json({ message: "Invalid input", errors: error.errors });
       } else {
