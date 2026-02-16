@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
-import { ProductWithCategory } from '@shared/schema';
+import { ProductWithCategory, Category } from '@shared/schema';
 import ProductCard from './ProductCard';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -14,6 +14,7 @@ type ProductGridProps = {
   isFetchingNextPage?: boolean;
   queryParams: any; // Using any for now to match the hook return type, but interface is better
   setQueryParams: (params: any) => void;
+  categories: Category[];
 };
 
 const ProductGrid = ({
@@ -24,7 +25,8 @@ const ProductGrid = ({
   hasNextPage,
   isFetchingNextPage,
   queryParams,
-  setQueryParams
+  setQueryParams,
+  categories
 }: ProductGridProps) => {
   // Local state for search input to avoid triggering fetch on every keystroke
   const [localSearch, setLocalSearch] = useState(queryParams.q || '');
@@ -59,11 +61,21 @@ const ProductGrid = ({
     setQueryParams(newParams);
   };
 
+  const handleCategoryChange = (value: string) => {
+    const newParams = { ...queryParams };
+    if (value === 'all') {
+      delete newParams.category;
+    } else {
+      newParams.category = value;
+    }
+    setQueryParams(newParams);
+  };
+
   return (
     <div className="w-full lg:pl-8">
-      {/* Search and Sort */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div className="w-full md:w-auto mb-4 md:mb-0">
+      {/* Search, Category, and Sort */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div className="w-full md:w-auto">
           <div className="relative">
             <Input
               type="text"
@@ -75,12 +87,30 @@ const ProductGrid = ({
             <Search className="absolute left-3 top-3 text-gray-400" size={16} />
           </div>
         </div>
-        <div className="w-full md:w-auto">
+
+        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+          {/* Category Dropdown */}
+          <Select
+            value={queryParams.category || 'all'}
+            onValueChange={handleCategoryChange}
+          >
+            <SelectTrigger className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-full md:w-48">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.map(category => (
+                <SelectItem key={category.id} value={category.slug}>{category.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Sort Dropdown */}
           <Select
             value={queryParams.sort || 'featured'}
             onValueChange={handleSortChange}
           >
-            <SelectTrigger className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary">
+            <SelectTrigger className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary w-full md:w-48">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -96,7 +126,7 @@ const ProductGrid = ({
 
       {/* Product Grid */}
       {isLoading && products.length === 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden p-6 animate-pulse">
               <div className="w-full h-48 bg-gray-200 mb-4"></div>
@@ -121,7 +151,7 @@ const ProductGrid = ({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {products.map((product, i) => (
               <ProductCard
                 key={product.id}

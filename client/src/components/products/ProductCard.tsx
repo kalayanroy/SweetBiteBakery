@@ -64,7 +64,7 @@ const ProductCard = ({ product, featured = false, priority = false }: ProductCar
           </button>
 
           {/* Product Image */}
-          <div className="overflow-hidden bg-gradient-to-br from-[#faf6f1] via-[#f5efe6] to-[#ede5d8]">
+          <div className="relative overflow-hidden bg-white" style={{ aspectRatio: '1/1' }}>
             <img
               src={product.image}
               alt={product.name}
@@ -73,8 +73,7 @@ const ProductCard = ({ product, featured = false, priority = false }: ProductCar
               // @ts-ignore - fetchPriority is not yet in React types
               fetchpriority={priority ? "high" : "auto"}
               onLoad={(e) => e.currentTarget.classList.add('loaded')}
-              style={{ mixBlendMode: 'multiply' }}
-              className={`w-full ${featured ? 'h-72' : 'h-56'} object-contain p-4 transform transition-transform duration-700 group-hover:scale-105 blur-sm opacity-70 transition-all duration-300 [&.loaded]:blur-0 [&.loaded]:opacity-100`}
+              className="absolute inset-0 w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105 blur-sm opacity-70 transition-all duration-300 [&.loaded]:blur-0 [&.loaded]:opacity-100"
             />
           </div>
 
@@ -84,10 +83,9 @@ const ProductCard = ({ product, featured = false, priority = false }: ProductCar
 
         {/* Content */}
         <div className="p-6">
-          {/* Product Title & Price */}
-          <div className="flex justify-between items-start mb-3">
-            <h3 className="font-heading text-lg font-bold text-text-dark group-hover:text-primary transition-colors duration-300 flex-1">{product.name}</h3>
-            <span className="text-primary font-bold ml-3 whitespace-nowrap">{formatCurrency(product.price)}</span>
+          {/* Product Title */}
+          <div className="mb-3">
+            <h3 className="font-heading text-lg font-bold text-text-dark group-hover:text-primary transition-colors duration-300">{product.name}</h3>
           </div>
 
           {/* Optional dietary tags */}
@@ -103,18 +101,21 @@ const ProductCard = ({ product, featured = false, priority = false }: ProductCar
           )}
 
           {/* Description */}
-          <p className="text-gray-600 text-sm mb-5 leading-relaxed">
+          {/* <p className="text-gray-600 text-sm mb-5 leading-relaxed">
             {truncateText(product.description, featured ? 120 : 75)}
-          </p>
+          </p> */}
 
-          {/* Add to Cart Button */}
-          <button
-            className="w-full bg-[#faf6f1] hover:bg-primary hover:text-white text-primary py-3 px-4 rounded-xl font-medium transition-colors duration-300 flex items-center justify-center"
-            onClick={handleAddToCart}
-          >
-            <ShoppingCart className="mr-2" size={18} />
-            Add to Cart
-          </button>
+          {/* Price and Add to Cart Button */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-primary font-bold text-md">{formatCurrency(product.price)}</span>
+            <button
+              className="flex-1 bg-[#faf6f1] hover:bg-primary hover:text-white text-primary py-3 px-4 rounded-xl font-medium transition-colors duration-300 flex items-center justify-center"
+              onClick={handleAddToCart}
+            >
+              <ShoppingCart className="mr-2" size={18} />
+              Cart
+            </button>
+          </div>
         </div>
       </div>
     </Link>
