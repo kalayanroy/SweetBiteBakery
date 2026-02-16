@@ -64,7 +64,7 @@ const ProductCard = ({ product, featured = false, priority = false }: ProductCar
           </button>
 
           {/* Product Image */}
-          <div className="overflow-hidden">
+          <div className="overflow-hidden bg-gradient-to-br from-[#faf6f1] via-[#f5efe6] to-[#ede5d8]">
             <img
               src={product.image}
               alt={product.name}
@@ -73,7 +73,8 @@ const ProductCard = ({ product, featured = false, priority = false }: ProductCar
               // @ts-ignore - fetchPriority is not yet in React types
               fetchpriority={priority ? "high" : "auto"}
               onLoad={(e) => e.currentTarget.classList.add('loaded')}
-              className={`w-full ${featured ? 'h-72' : 'h-56'} object-cover transform transition-transform duration-700 group-hover:scale-105 blur-sm opacity-70 transition-all duration-300 [&.loaded]:blur-0 [&.loaded]:opacity-100`}
+              style={{ mixBlendMode: 'multiply' }}
+              className={`w-full ${featured ? 'h-72' : 'h-56'} object-contain p-4 transform transition-transform duration-700 group-hover:scale-105 blur-sm opacity-70 transition-all duration-300 [&.loaded]:blur-0 [&.loaded]:opacity-100`}
             />
           </div>
 
@@ -84,24 +85,22 @@ const ProductCard = ({ product, featured = false, priority = false }: ProductCar
         {/* Content */}
         <div className="p-6">
           {/* Product Title & Price */}
-          <div className="flex flex-col mb-3">
-            <h3 className="font-heading text-lg font-bold text-text-dark group-hover:text-primary transition-colors duration-300">{product.name}</h3>
-            <div className="mt-1 flex justify-between items-center">
-              <span className="text-primary font-bold">{formatCurrency(product.price)}</span>
+          <div className="flex justify-between items-start mb-3">
+            <h3 className="font-heading text-lg font-bold text-text-dark group-hover:text-primary transition-colors duration-300 flex-1">{product.name}</h3>
+            <span className="text-primary font-bold ml-3 whitespace-nowrap">{formatCurrency(product.price)}</span>
+          </div>
 
-              {/* Optional dietary tags */}
-              {Array.isArray(product.dietaryOptions) && (
-                <div className="flex space-x-1">
-                  {(product.dietaryOptions as string[]).includes('vegan') && (
-                    <span className="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-0.5 rounded">Vegan</span>
-                  )}
-                  {(product.dietaryOptions as string[]).includes('gluten-free') && (
-                    <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded">GF</span>
-                  )}
-                </div>
+          {/* Optional dietary tags */}
+          {Array.isArray(product.dietaryOptions) && (product.dietaryOptions as string[]).length > 0 && (
+            <div className="flex space-x-1 mb-3">
+              {(product.dietaryOptions as string[]).includes('vegan') && (
+                <span className="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-0.5 rounded">Vegan</span>
+              )}
+              {(product.dietaryOptions as string[]).includes('gluten-free') && (
+                <span className="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded">GF</span>
               )}
             </div>
-          </div>
+          )}
 
           {/* Description */}
           <p className="text-gray-600 text-sm mb-5 leading-relaxed">
