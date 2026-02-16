@@ -20,7 +20,7 @@ const Products = () => {
   } = useInfiniteQuery({
     queryKey: ['/api/products', queryParams],
     queryFn: async ({ pageParam = 0 }) => {
-      const limit = 3; // Reduced from 6 for faster initial load
+      const limit = 6; // Changed to 6 to fill one complete row (6 products per row)
       const offset = pageParam;
 
       const searchParams = new URLSearchParams();
