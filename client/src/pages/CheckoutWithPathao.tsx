@@ -34,6 +34,7 @@ import {
     Loader2,
     MapPin
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Extend order schema with validation rules for Bangladesh
 const checkoutFormSchema = insertOrderSchema.extend({
@@ -44,6 +45,9 @@ const checkoutFormSchema = insertOrderSchema.extend({
     city: z.string().optional(),
     state: z.string().optional(),
     zipCode: z.string().optional(),
+    acceptTerms: z.boolean().refine((val) => val === true, {
+        message: "You must agree to the Terms, Privacy Policy, and Refund Policy",
+    }),
 });
 
 type CheckoutFormValues = z.infer<typeof checkoutFormSchema>;
@@ -86,7 +90,8 @@ const CheckoutWithPathao = () => {
             state: "",
             zipCode: "",
             paymentMethod: "cash",
-            total: cart.subtotal
+            total: cart.subtotal,
+            acceptTerms: false,
         }
     });
 
@@ -254,7 +259,7 @@ const CheckoutWithPathao = () => {
                 <meta name="description" content="Complete your order at Probashi Bakery with Pathao courier delivery." />
             </Helmet>
 
-            <div className="container mx-auto px-4 py-16">
+            <div className="container mx-auto px-4 py-20">
                 <h1 className="font-heading text-3xl md:text-4xl font-bold text-primary mb-8 text-center">
                     Checkout
                 </h1>
@@ -497,6 +502,29 @@ const CheckoutWithPathao = () => {
                                                             </RadioGroup>
                                                         </FormControl>
                                                         <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={form.control}
+                                                name="acceptTerms"
+                                                render={({ field }) => (
+                                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 mt-4">
+                                                        <FormControl>
+                                                            <Checkbox
+                                                                checked={field.value}
+                                                                onCheckedChange={field.onChange}
+                                                            />
+                                                        </FormControl>
+                                                        <div className="space-y-1 leading-none">
+                                                            <FormLabel>
+                                                                I agree to the{" "}
+                                                                <a href="/terms" target="_blank" className="text-primary hover:underline">Terms & Conditions</a>,{" "}
+                                                                <a href="/privacy-policy" target="_blank" className="text-primary hover:underline">Privacy Policy</a>, and{" "}
+                                                                <a href="/refund-policy" target="_blank" className="text-primary hover:underline">Return & Refund Policy</a>.
+                                                            </FormLabel>
+                                                            <FormMessage />
+                                                        </div>
                                                     </FormItem>
                                                 )}
                                             />

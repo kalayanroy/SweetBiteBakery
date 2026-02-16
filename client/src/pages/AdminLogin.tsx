@@ -86,9 +86,9 @@ const AdminLogin = () => {
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="Enter your username" 
-                        {...field} 
+                      <Input
+                        placeholder="Enter your username"
+                        {...field}
                         disabled={isLoading}
                       />
                     </FormControl>
@@ -103,10 +103,10 @@ const AdminLogin = () => {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="password" 
-                        placeholder="Enter your password" 
-                        {...field} 
+                      <Input
+                        type="password"
+                        placeholder="Enter your password"
+                        {...field}
                         disabled={isLoading}
                       />
                     </FormControl>
@@ -114,9 +114,9 @@ const AdminLogin = () => {
                   </FormItem>
                 )}
               />
-              <Button 
-                type="submit" 
-                className="w-full bg-primary text-white" 
+              <Button
+                type="submit"
+                className="w-full bg-primary text-white"
                 disabled={isLoading}
               >
                 {isLoading ? "Logging in..." : "Login"}
@@ -126,7 +126,7 @@ const AdminLogin = () => {
         </CardContent>
         <CardFooter className="flex justify-center">
           <div className="text-sm text-gray-500">
-            For demo use: username <span className="font-mono">admin</span> and password <span className="font-mono">admin123</span>
+            {/* For demo use: username <span className="font-mono">admin</span> and password <span className="font-mono">admin123</span> */}
           </div>
         </CardFooter>
       </Card>

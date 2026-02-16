@@ -8,7 +8,7 @@ const RefundPolicyPage = () => {
                 <title>Refund Policy | Probashi Bakery</title>
                 <meta name="description" content="Refund Policy for Probashi Bakery - Timelines and Methods" />
             </Helmet>
-            <div className="container mx-auto px-4 py-16 max-w-4xl">
+            <div className="container mx-auto px-4 py-20 max-w-4xl">
                 <h1 className="text-3xl font-bold mb-8 text-primary font-heading">Refund Policy</h1>
                 <div className="prose max-w-none text-gray-700 space-y-4">
                     <p>Thank you for shopping at Probashi Bakery. If, for any reason, You are not completely satisfied with a purchase, we are here to help. This policy outlines how refunds are processed. For item returns, please refer to our <a href="/return-policy" className="underline font-semibold hover:text-primary">Return Policy</a>.</p>

@@ -21,7 +21,7 @@ const Products = () => {
   } = useInfiniteQuery({
     queryKey: ['/api/products', queryParams],
     queryFn: async ({ pageParam = 0 }) => {
-      const limit = 6;
+      const limit = 3; // Reduced from 6 for faster initial load
       const offset = pageParam;
 
       const searchParams = new URLSearchParams();
@@ -45,6 +45,8 @@ const Products = () => {
     },
     initialPageParam: 0,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   // Flatten all pages into single array

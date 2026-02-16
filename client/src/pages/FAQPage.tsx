@@ -14,7 +14,7 @@ const FAQPage = () => {
                 <title>Frequently Asked Questions | Probashi Bakery</title>
                 <meta name="description" content="FAQ - Frequently Asked Questions about Probashi Bakery" />
             </Helmet>
-            <div className="container mx-auto px-4 py-16 max-w-4xl">
+            <div className="container mx-auto px-4 py-20 max-w-4xl">
                 <h1 className="text-3xl font-bold mb-8 text-primary font-heading text-center">Frequently Asked Questions</h1>
 
                 <div className="space-y-8">

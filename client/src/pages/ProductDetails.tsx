@@ -222,7 +222,7 @@ const ProductDetails = () => {
           </div>
         </div>
 
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-12">
           {/* Main Product Section */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
             {/* Image Gallery with Vertical Thumbnails - 2 columns */}

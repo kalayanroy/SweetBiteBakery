@@ -29,8 +29,8 @@ const checkoutFormSchema = insertOrderSchema.extend({
   city: z.string().min(2, "City must be at least 2 characters"),
   state: z.string().min(2, "Division/District must be at least 2 characters"),
   zipCode: z.string().min(4, "Postal code must be at least 4 digits"),
-  acceptTerms: z.literal(true, {
-    errorMap: () => ({ message: "You must agree to the Terms, Privacy Policy, and Refund Policy" }),
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: "You must agree to the Terms, Privacy Policy, and Refund Policy",
   }),
 });
 
@@ -117,7 +117,7 @@ const Checkout = () => {
         <meta name="description" content="Complete your order at Probashi Bakery." />
       </Helmet>
 
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-20">
         <h1 className="font-heading text-3xl md:text-4xl font-bold text-primary mb-8 text-center">Checkout</h1>
 
         <div className="flex flex-col-reverse lg:flex-row gap-8">

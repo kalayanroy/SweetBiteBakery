@@ -19229,6 +19229,11 @@ async function registerRoutes(app2) {
           category: category2 || { id: 0, name: "Unknown", slug: "unknown" }
         };
       });
+      res.set({
+        "Cache-Control": "public, max-age=300",
+        // 5 minutes
+        "ETag": `W/"products-${total}-${JSON.stringify(filters)}"`
+      });
       res.json({
         products: productsWithCategory,
         total,
@@ -19250,6 +19255,11 @@ async function registerRoutes(app2) {
           ...product,
           category: category || { id: 0, name: "Unknown", slug: "unknown" }
         };
+      });
+      res.set({
+        "Cache-Control": "public, max-age=300",
+        // 5 minutes
+        "ETag": `W/"featured-${productsWithCategory.length}"`
       });
       res.json(productsWithCategory);
     } catch (error) {

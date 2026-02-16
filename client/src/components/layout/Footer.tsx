@@ -126,7 +126,7 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/privacy">
+                <Link href="/privacy-policy">
                   <div className="text-gray-300 hover:text-accent hover:translate-x-1 transition-all duration-300 cursor-pointer flex items-center">
                     <span className="text-xs mr-2">•</span>Privacy Policy
                   </div>

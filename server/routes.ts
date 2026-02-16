@@ -245,6 +245,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       });
 
+      // Add HTTP caching headers for performance
+      res.set({
+        'Cache-Control': 'public, max-age=300', // 5 minutes
+        'ETag': `W/"products-${total}-${JSON.stringify(filters)}"`,
+      });
+
       res.json({
         products: productsWithCategory,
         total,
@@ -269,6 +275,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ...product,
           category: category || { id: 0, name: "Unknown", slug: "unknown" }
         };
+      });
+
+      // Add HTTP caching headers for performance
+      res.set({
+        'Cache-Control': 'public, max-age=300', // 5 minutes
+        'ETag': `W/"featured-${productsWithCategory.length}"`,
       });
 
       res.json(productsWithCategory);

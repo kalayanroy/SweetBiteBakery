@@ -9,7 +9,7 @@ const ReturnPolicyPage = () => {
                 <title>Return Policy | Probashi Bakery</title>
                 <meta name="description" content="Product Return Policy for Probashi Bakery" />
             </Helmet>
-            <div className="container mx-auto px-4 py-16 max-w-4xl">
+            <div className="container mx-auto px-4 py-20 max-w-4xl">
                 <h1 className="text-3xl font-bold mb-8 text-primary font-heading">Return Policy</h1>
 
                 <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8">

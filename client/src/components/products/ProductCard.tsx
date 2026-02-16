@@ -72,7 +72,8 @@ const ProductCard = ({ product, featured = false, priority = false }: ProductCar
               decoding="async"
               // @ts-ignore - fetchPriority is not yet in React types
               fetchpriority={priority ? "high" : "auto"}
-              className={`w-full ${featured ? 'h-72' : 'h-56'} object-cover transform transition-transform duration-700 group-hover:scale-105`}
+              onLoad={(e) => e.currentTarget.classList.add('loaded')}
+              className={`w-full ${featured ? 'h-72' : 'h-56'} object-cover transform transition-transform duration-700 group-hover:scale-105 blur-sm opacity-70 transition-all duration-300 [&.loaded]:blur-0 [&.loaded]:opacity-100`}
             />
           </div>
 

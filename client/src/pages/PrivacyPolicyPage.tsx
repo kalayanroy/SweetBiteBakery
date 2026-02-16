@@ -8,7 +8,7 @@ const PrivacyPolicyPage = () => {
                 <title>Privacy Policy | Probashi Bakery</title>
                 <meta name="description" content="Privacy Policy for Probashi Bakery" />
             </Helmet>
-            <div className="container mx-auto px-4 py-16 max-w-4xl">
+            <div className="container mx-auto px-4 py-20 max-w-4xl">
                 <h1 className="text-3xl font-bold mb-8 text-primary font-heading">Privacy Policy</h1>
                 <div className="prose max-w-none text-gray-700 space-y-4">
                     <p>At Probashi Bakery, accessible from our website, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by Probashi Bakery and how we use it.</p>

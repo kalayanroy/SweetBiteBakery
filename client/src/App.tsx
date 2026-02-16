@@ -45,61 +45,65 @@ import RefundPolicyPage from "@/pages/RefundPolicyPage";
 import DeliveryInfoPage from "@/pages/DeliveryInfoPage";
 import ReturnPolicyPage from "@/pages/ReturnPolicyPage";
 import FAQPage from "@/pages/FAQPage";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 function Router() {
   return (
-    <Switch>
-      {/* Public Routes */}
-      <Route path="/" component={Home} />
-      {/* Design Variants Preview Routes */}
-      <Route path="/v1" component={HomeVariant1} />
-      <Route path="/v2" component={HomeVariant2} />
-      <Route path="/v3" component={HomeVariant3} />
-      <Route path="/v4" component={HomeVariant4} />
+    <>
+      <ScrollToTop />
+      <Switch>
+        {/* Public Routes */}
+        <Route path="/" component={Home} />
+        {/* Design Variants Preview Routes */}
+        <Route path="/v1" component={HomeVariant1} />
+        <Route path="/v2" component={HomeVariant2} />
+        <Route path="/v3" component={HomeVariant3} />
+        <Route path="/v4" component={HomeVariant4} />
 
-      <Route path="/products" component={Products} />
-      <Route path="/products/:slug" component={ProductDetails} />
-      <Route path="/cart" component={Cart} />
-      <Route path="/checkout" component={Checkout} />
-      <Route path="/order-confirmation" component={OrderConfirmation} />
-      <Route path="/order-tracking" component={OrderTracking} />
-      <Route path="/about" component={AboutUs} />
-      <Route path="/contact" component={Contact} />
-      <Route path="/terms" component={TermsPage} />
-      <Route path="/privacy-policy" component={PrivacyPolicyPage} />
-      <Route path="/refund-policy" component={RefundPolicyPage} />
-      <Route path="/delivery" component={DeliveryInfoPage} />
-      <Route path="/return-policy" component={ReturnPolicyPage} />
-      <Route path="/faq" component={FAQPage} />
+        <Route path="/products" component={Products} />
+        <Route path="/products/:slug" component={ProductDetails} />
+        <Route path="/cart" component={Cart} />
+        <Route path="/checkout" component={Checkout} />
+        <Route path="/order-confirmation" component={OrderConfirmation} />
+        <Route path="/order-tracking" component={OrderTracking} />
+        <Route path="/about" component={AboutUs} />
+        <Route path="/contact" component={Contact} />
+        <Route path="/terms" component={TermsPage} />
+        <Route path="/privacy-policy" component={PrivacyPolicyPage} />
+        <Route path="/refund-policy" component={RefundPolicyPage} />
+        <Route path="/delivery" component={DeliveryInfoPage} />
+        <Route path="/return-policy" component={ReturnPolicyPage} />
+        <Route path="/faq" component={FAQPage} />
 
-      {/* User Authentication Routes */}
-      <Route path="/register" component={Register} />
-      <Route path="/login" component={Login} />
-      <Route path="/user-panel" component={UserPanel} />
+        {/* User Authentication Routes */}
+        <Route path="/register" component={Register} />
+        <Route path="/login" component={Login} />
+        <Route path="/user-panel" component={UserPanel} />
 
-      {/* Admin Routes */}
-      <Route path="/admin/login" component={AdminLogin} />
-      <Route path="/admin/dashboard" component={AdminDashboard} />
-      <Route path="/admin/products" component={AdminProducts} />
-      <Route path="/admin/products/new" component={AdminProductForm} />
-      <Route path="/admin/products/edit/:id" component={AdminProductForm} />
-      <Route path="/admin/orders" component={AdminOrders} />
-      <Route path="/admin/customers" component={AdminCustomers} />
-      <Route path="/admin/users" component={AdminUsers} />
-      <Route path="/admin/customers" component={AdminCustomers} />
-      <Route path="/admin/users" component={AdminUsers} />
-      <Route path="/admin/settings" component={AdminSettings} />
-      <Route path="/admin/pos" component={AdminPOS} />
-      <Route path="/admin/suppliers" component={AdminSuppliers} />
-      <Route path="/admin/purchases" component={AdminPurchases} />
-      <Route path="/admin/purchases/new" component={AdminPurchaseForm} />
-      <Route path="/admin/purchases/:id" component={AdminPurchaseForm} />
-      <Route path="/admin/inventory" component={AdminInventory} />
-      <Route path="/admin/reports" component={AdminReports} />
+        {/* Admin Routes */}
+        <Route path="/admin/login" component={AdminLogin} />
+        <Route path="/admin/dashboard" component={AdminDashboard} />
+        <Route path="/admin/products" component={AdminProducts} />
+        <Route path="/admin/products/new" component={AdminProductForm} />
+        <Route path="/admin/products/edit/:id" component={AdminProductForm} />
+        <Route path="/admin/orders" component={AdminOrders} />
+        <Route path="/admin/customers" component={AdminCustomers} />
+        <Route path="/admin/users" component={AdminUsers} />
+        <Route path="/admin/customers" component={AdminCustomers} />
+        <Route path="/admin/users" component={AdminUsers} />
+        <Route path="/admin/settings" component={AdminSettings} />
+        <Route path="/admin/pos" component={AdminPOS} />
+        <Route path="/admin/suppliers" component={AdminSuppliers} />
+        <Route path="/admin/purchases" component={AdminPurchases} />
+        <Route path="/admin/purchases/new" component={AdminPurchaseForm} />
+        <Route path="/admin/purchases/:id" component={AdminPurchaseForm} />
+        <Route path="/admin/inventory" component={AdminInventory} />
+        <Route path="/admin/reports" component={AdminReports} />
 
-      {/* Fallback to 404 */}
-      <Route component={NotFound} />
-    </Switch>
+        {/* Fallback to 404 */}
+        <Route component={NotFound} />
+      </Switch>
+    </>
   );
 }
 

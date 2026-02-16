@@ -8,7 +8,7 @@ const TermsPage = () => {
                 <title>Terms and Conditions | Probashi Bakery</title>
                 <meta name="description" content="Terms and Conditions for Probashi Bakery" />
             </Helmet>
-            <div className="container mx-auto px-4 py-16 max-w-4xl">
+            <div className="container mx-auto px-4 py-20 max-w-4xl">
                 <h1 className="text-3xl font-bold mb-8 text-primary font-heading">Terms and Conditions</h1>
                 <div className="prose max-w-none text-gray-700 space-y-4">
                     <p>Welcome to Probashi Bakery. By accessing this website we assume you accept these terms and conditions. Do not continue to use Probashi Bakery if you do not agree to take all of the terms and conditions stated on this page.</p>
